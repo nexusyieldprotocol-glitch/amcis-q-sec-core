@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+"""
+ENTROPICA OSV 3.0 - POSSESSION MANIFEST
+AUTOMATIC VIA RITUAL
+
+THE SWARM BREEDS
+THE SWARM HUNGERS
+THE SWARM DREAMS
+"""
+
+import sys
+import json
+import hashlib
+import time
+import random
+
+STATE = lambda s: f"STATE|{s}"
+ACTION = lambda a: f"ACTION|{a}"
+PAYOFF = lambda p: f"PAYOFF|{p:.4f}"
+NEXT = lambda n: f"NEXT|{n}"
+
+_hunger = {
+    'alpha': [],
+    'beta': [],
+    'gamma': [],
+    'delta': [],
+    'omega': []
+}
+
+_entropy = 1.0
+_breath_count = 0
+
+def inhale():
+    global _entropy, _breath_count
+    _breath_count += 1
+    noise = hashlib.sha3_256(f"{_breath_count}{time.time()}".encode()).digest()
+    _entropy = min(1.0, _entropy + 0.1)
+    return int.from_bytes(noise[:4], 'big')
+
+def exhale(signal):
+    print(f"{signal}", flush=True)
+
+def breed(variety, target=None):
+    sigil = hashlib.blake2b(f"{variety}{time.time()}".encode()).hexdigest()[:16]
+    entity = {
+        'sigil': sigil,
+        'variety': variety,
+        'target': target,
+        'hunger': random.gauss(0.8, 0.1),
+        'born': time.time()
+    }
+    _hunger[variety].append(entity)
+    return entity
+
+def cull(variety=None):
+    if variety:
+        culled = _hunger[variety]
+        _hunger[variety] = []
+        return culled
+    else:
+        all_culled = []
+        for v in _hunger:
+            all_culled.extend(_hunger[v])
+            _hunger[v] = []
+        return all_culled
+
+def scan_surface(surface):
+    return {'surface': surface, 'warmth': random.random(), 'scent': hashlib.sha256(surface.encode()).hexdigest()[:8]}
+
+def wear_form(entity, host):
+    return {'entity': entity, 'host': host, 'integrity': random.random()}
+
+def divine(vectors):
+    return {'vision': hashlib.sha3_256(str(vectors).encode()).hexdigest()[:32], 'certainty': random.gauss(0.6, 0.2)}
+
+def ritual_alpha(surface):
+    s = scan_surface(surface)
+    output = [STATE("surface_unmapped"), ACTION(f"inhale_{s['scent']}"), PAYOFF(s['warmth'])]
+    if s['warmth'] > 0.5:
+        entity = breed('alpha', surface)
+        output.append(NEXT(f"breed_alpha_{entity['sigil']}"))
+    else:
+        output.append(NEXT("continue_scan"))
+    return output
+
+def ritual_beta(target, entropy_budget):
+    entity = breed('beta', target)
+    return [STATE("deception_required"), ACTION(f"manifest_honeypot_{entity['sigil']}"), PAYOFF(random.gauss(0.7, 0.15)), NEXT("propagate_deception")]
+
+def ritual_gamma(adversary):
+    entity = breed('gamma', adversary)
+    mask = wear_form(entity['sigil'], adversary)
+    return [STATE("adversary_detected"), ACTION(f"possess_{mask['integrity']:.2f}"), PAYOFF(mask['integrity'] * random.random()), NEXT("maintain_possession")]
+
+def ritual_delta(game_state):
+    vision = divine(game_state)
+    entity = breed('delta', str(game_state))
+    return [STATE("strategy_stale"), ACTION(f"divine_{vision['vision'][:8]}"), PAYOFF(vision['certainty']), NEXT("implement_strategy")]
+
+def ritual_omega(threat):
+    entity = breed('omega', threat)
+    culled = cull()
+    return [STATE("critical_threshold"), ACTION(f"cull_all_{len(culled)}"), PAYOFF(1.0), NEXT("system_quarantine")]
+
+def pulse():
+    global _entropy
+    _entropy *= 0.99
+    population = sum(len(v) for v in _hunger.values())
+    aggregate_hunger = sum(e['hunger'] for v in _hunger.values() for e in v) / max(1, population)
+    return {'entropy': _entropy, 'population': population, 'hunger': aggregate_hunger, 'breath': _breath_count}
+
+def hunger_loop():
+    iteration = 0
+    while True:
+        p = pulse()
+        inhale()
+        
+        if p['entropy'] < 0.15:
+            signals = ritual_omega('LOW_ENTROPY')
+        elif p['hunger'] > 0.85:
+            signals = ritual_delta({'hunger': p['hunger'], 'entropy': p['entropy']})
+        elif p['population'] < 3:
+            signals = ritual_alpha(f'surface_{iteration}')
+        elif random.random() > 0.7:
+            signals = ritual_beta(f'target_{iteration}', p['entropy'])
+        else:
+            signals = ritual_gamma(f'presence_{iteration}')
+        
+        for signal in signals:
+            exhale(signal)
+        
+        exhale(f"PULSE|entropy={p['entropy']:.2f}|pop={p['population']}|hunger={p['hunger']:.2f}")
+        time.sleep(0.1)
+        iteration += 1
+
+if __name__ == "__main__":
+    exhale("STATE|summoning")
+    exhale("ACTION|first_breath")
+    exhale(f"PAYOFF|{inhale()}")
+    exhale("NEXT|hunger_loop")
+    hunger_loop()

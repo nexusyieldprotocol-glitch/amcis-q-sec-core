@@ -1,0 +1,337 @@
+{
+  "version": "2.0",
+  "publication_date": "2024-02-26",
+  "framework": "NIST Cybersecurity Framework",
+  "total_controls": 23,
+  "functions": {
+    "GOVERN": {
+      "code": "GV",
+      "name": "Govern",
+      "description": "Organizational context and risk management",
+      "control_count": 6,
+      "controls": {
+        "GV.OC": {
+          "category": "Organizational Context",
+          "description": "The organizational mission, objectives, and activities are understood; cybersecurity risks are understood in that context.",
+          "examples": [
+            "Document organizational mission and objectives",
+            "Establish cybersecurity strategy aligned with mission",
+            "Define risk appetite and tolerance"
+          ],
+          "modules": ["policy_engine", "risk_portfolio"],
+          "priority": "HIGH"
+        },
+        "GV.RM": {
+          "category": "Risk Management Strategy",
+          "description": "Risk management strategy is established and communicated. Risk appetite and tolerance are understood.",
+          "examples": [
+            "Establish risk management framework",
+            "Define risk assessment methodology",
+            "Implement risk monitoring program"
+          ],
+          "modules": ["risk_portfolio", "compliance_engine"],
+          "priority": "CRITICAL"
+        },
+        "GV.RR": {
+          "category": "Roles and Responsibilities",
+          "description": "Cybersecurity roles, responsibilities, and authorities are established and communicated throughout the organization.",
+          "examples": [
+            "Define cybersecurity organizational chart",
+            "Assign system and data ownership",
+            "Establish RACI matrix for security functions"
+          ],
+          "modules": ["trust_engine", "policy_engine"],
+          "priority": "HIGH"
+        },
+        "GV.PO": {
+          "category": "Policy",
+          "description": "Cybersecurity policy is established, communicated, and enforced. Policy is reviewed and updated regularly.",
+          "examples": [
+            "Develop comprehensive security policy",
+            "Implement policy management system",
+            "Conduct regular policy reviews"
+          ],
+          "modules": ["policy_engine", "compliance_engine"],
+          "priority": "HIGH"
+        },
+        "GV.OV": {
+          "category": "Oversight",
+          "description": "Cybersecurity risk management strategy is reviewed and adjusted to ensure objectives are achieved.",
+          "examples": [
+            "Establish security metrics and KPIs",
+            "Conduct regular risk assessments",
+            "Implement continuous monitoring"
+          ],
+          "modules": ["anomaly_engine", "security_monitor"],
+          "priority": "HIGH"
+        },
+        "GV.SC": {
+          "category": "Supply Chain Risk Management",
+          "description": "Cybersecurity supply chain risk management processes are identified, established, and communicated.",
+          "examples": [
+            "Implement vendor risk assessment",
+            "Establish SBOM requirements",
+            "Monitor supply chain threats"
+          ],
+          "modules": ["supply_chain", "threat_intel"],
+          "priority": "HIGH"
+        }
+      }
+    },
+    "IDENTIFY": {
+      "code": "ID",
+      "name": "Identify",
+      "description": "Asset and risk understanding",
+      "control_count": 3,
+      "controls": {
+        "ID.AM": {
+          "category": "Asset Management",
+          "description": "Assets are inventoried and managed throughout their lifecycle. Critical assets are identified and prioritized.",
+          "examples": [
+            "Maintain asset inventory",
+            "Asset classification and labeling",
+            "Asset lifecycle management"
+          ],
+          "modules": ["integrity_monitor", "file_integrity"],
+          "priority": "CRITICAL"
+        },
+        "ID.RA": {
+          "category": "Risk Assessment",
+          "description": "Cybersecurity risks are identified, analyzed, and prioritized. Risk response is planned.",
+          "examples": [
+            "Conduct threat assessments",
+            "Vulnerability scanning and analysis",
+            "Risk scoring and prioritization"
+          ],
+          "modules": ["anomaly_engine", "threat_intel", "risk_portfolio"],
+          "priority": "CRITICAL"
+        },
+        "ID.IM": {
+          "category": "Improvement",
+          "description": "Improvements to organizational cybersecurity are identified, prioritized, and implemented.",
+          "examples": [
+            "Security metrics analysis",
+            "Lessons learned process",
+            "Continuous improvement program"
+          ],
+          "modules": ["compliance_engine", "security_monitor"],
+          "priority": "MODERATE"
+        }
+      }
+    },
+    "PROTECT": {
+      "code": "PR",
+      "name": "Protect",
+      "description": "Safeguard implementation",
+      "control_count": 5,
+      "controls": {
+        "PR.AA": {
+          "category": "Identity Management and Access Control",
+          "description": "Identities and credentials are managed and access is authenticated, authorized, and audited.",
+          "examples": [
+            "Multi-factor authentication",
+            "Privileged access management",
+            "Regular access reviews"
+          ],
+          "modules": ["trust_engine", "key_manager"],
+          "priority": "CRITICAL"
+        },
+        "PR.AT": {
+          "category": "Awareness and Training",
+          "description": "Personnel are provided with cybersecurity awareness and training. Training is evaluated and updated.",
+          "examples": [
+            "Security awareness program",
+            "Role-based training",
+            "Phishing simulations"
+          ],
+          "modules": ["compliance_engine"],
+          "priority": "MODERATE"
+        },
+        "PR.DS": {
+          "category": "Data Security",
+          "description": "Data is managed and protected consistent with risk strategy. Data confidentiality, integrity, and availability are maintained.",
+          "examples": [
+            "Data classification",
+            "Encryption at rest and in transit",
+            "Data loss prevention"
+          ],
+          "modules": ["amcis_encrypt", "hybrid_pqc", "dlp_engine"],
+          "priority": "CRITICAL"
+        },
+        "PR.PS": {
+          "category": "Platform Security",
+          "description": "Hardware, software, and services are configured and maintained consistent with risk strategy.",
+          "examples": [
+            "Secure configuration baselines",
+            "Patch management",
+            "Endpoint protection"
+          ],
+          "modules": ["edr", "container_sec", "cloud_sec"],
+          "priority": "HIGH"
+        },
+        "PR.IR": {
+          "category": "Technology Infrastructure Resilience",
+          "description": "Technology infrastructure is protected from cybersecurity threats. Resilience is designed and implemented.",
+          "examples": [
+            "Network segmentation",
+            "DDoS protection",
+            "Backup and recovery"
+          ],
+          "modules": ["network", "microsegmentation", "resilience"],
+          "priority": "HIGH"
+        }
+      }
+    },
+    "DETECT": {
+      "code": "DE",
+      "name": "Detect",
+      "description": "Anomaly and event detection",
+      "control_count": 3,
+      "controls": {
+        "DE.AE": {
+          "category": "Anomalies and Events",
+          "description": "Anomalies, indicators of compromise, and other potentially adverse events are detected and analyzed.",
+          "examples": [
+            "Security event monitoring",
+            "Anomaly detection",
+            "Threat hunting"
+          ],
+          "modules": ["anomaly_engine", "threat_detection"],
+          "priority": "CRITICAL"
+        },
+        "DE.CM": {
+          "category": "Continuous Monitoring",
+          "description": "Assets are monitored to find anomalies, indicators of compromise, and other adverse events.",
+          "examples": [
+            "Continuous vulnerability scanning",
+            "Security control monitoring",
+            "Asset tracking"
+          ],
+          "modules": ["security_monitor", "metrics_collector"],
+          "priority": "CRITICAL"
+        },
+        "DE.IM": {
+          "category": "Improvement",
+          "description": "Detection capabilities are continuously improved through lessons learned and threat intelligence.",
+          "examples": [
+            "Detection rule updates",
+            "Threat intelligence integration",
+            "Security metrics analysis"
+          ],
+          "modules": ["threat_intel", "compliance_engine"],
+          "priority": "MODERATE"
+        }
+      }
+    },
+    "RESPOND": {
+      "code": "RS",
+      "name": "Respond",
+      "description": "Incident response capabilities",
+      "control_count": 5,
+      "controls": {
+        "RS.MA": {
+          "category": "Response Management",
+          "description": "Incidents are contained, eradicated, and recovered from. Response processes are executed.",
+          "examples": [
+            "Incident response plan",
+            "Automated containment",
+            "Forensic investigation"
+          ],
+          "modules": ["response_engine", "soar", "forensics"],
+          "priority": "CRITICAL"
+        },
+        "RS.AN": {
+          "category": "Analysis",
+          "description": "Incidents are analyzed to ensure effective response and support forensics and recovery activities.",
+          "examples": [
+            "Incident timeline creation",
+            "Root cause analysis",
+            "Impact assessment"
+          ],
+          "modules": ["forensics", "timeline"],
+          "priority": "HIGH"
+        },
+        "RS.CO": {
+          "category": "Containment",
+          "description": "Activities are performed to prevent or reduce the impact of incidents and prevent spread.",
+          "examples": [
+            "Network isolation",
+            "Account lockdown",
+            "Malware quarantine"
+          ],
+          "modules": ["response_engine", "microsegmentation"],
+          "priority": "CRITICAL"
+        },
+        "RS.MI": {
+          "category": "Mitigation",
+          "description": "Activities are performed to resolve incidents and restore affected systems and assets.",
+          "examples": [
+            "Vulnerability remediation",
+            "Patch deployment",
+            "System restoration"
+          ],
+          "modules": ["response_engine", "soar"],
+          "priority": "HIGH"
+        },
+        "RS.IM": {
+          "category": "Improvement",
+          "description": "Response capabilities are continuously improved through lessons learned and threat intelligence.",
+          "examples": [
+            "Post-incident reviews",
+            "Playbook updates",
+            "Training updates"
+          ],
+          "modules": ["compliance_engine"],
+          "priority": "MODERATE"
+        }
+      }
+    },
+    "RECOVER": {
+      "code": "RC",
+      "name": "Recover",
+      "description": "Recovery and resilience",
+      "control_count": 3,
+      "controls": {
+        "RC.RP": {
+          "category": "Response Planning",
+          "description": "Recovery planning processes are executed to restore systems and assets affected by incidents.",
+          "examples": [
+            "Disaster recovery plan",
+            "Backup restoration",
+            "Business continuity"
+          ],
+          "modules": ["resilience", "backup_recovery"],
+          "priority": "HIGH"
+        },
+        "RC.IM": {
+          "category": "Improvement",
+          "description": "Recovery capabilities are continuously improved through lessons learned and threat intelligence.",
+          "examples": [
+            "Recovery testing",
+            "Plan updates",
+            "Training exercises"
+          ],
+          "modules": ["compliance_engine"],
+          "priority": "MODERATE"
+        },
+        "RC.CO": {
+          "category": "Communications",
+          "description": "Communications during recovery activities are coordinated with internal and external stakeholders.",
+          "examples": [
+            "Stakeholder notification",
+            "Status updates",
+            "Public relations"
+          ],
+          "modules": ["response_engine"],
+          "priority": "MODERATE"
+        }
+      }
+    }
+  },
+  "metadata": {
+    "source": "NIST Cybersecurity Framework 2.0",
+    "url": "https://www.nist.gov/cyberframework",
+    "generated_by": "AMCIS Compliance Engine",
+    "generated_at": "2026-03-12T00:00:00Z"
+  }
+}

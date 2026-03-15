@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMCIS 6.0 - Quantum Security Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'quantum-cyan': '#00c8ff',
+                        'quantum-purple': '#8b5cf6',
+                        'quantum-dark': '#0f172a',
+                        'quantum-card': '#1e293b',
+                        'quantum-border': 'rgba(0, 200, 255, 0.2)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * { font-family: 'Inter', sans-serif; }
+        
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            min-height: 100vh;
+        }
+        
+        .quantum-glow {
+            box-shadow: 0 0 20px rgba(0, 200, 255, 0.3);
+        }
+        
+        .quantum-glow-sm {
+            box-shadow: 0 0 10px rgba(0, 200, 255, 0.2);
+        }
+        
+        .quantum-border {
+            border-color: rgba(0, 200, 255, 0.3);
+        }
+        
+        .metric-card {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            box-shadow: 0 0 25px rgba(0, 200, 255, 0.3);
+            border-color: rgba(0, 200, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .stat-number {
+            background: linear-gradient(135deg, #00c8ff 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .badge-critical {
+            @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-950 text-red-200 border border-red-800;
+        }
+        
+        .badge-high {
+            @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-orange-950 text-orange-200 border border-orange-800;
+        }
+        
+        .badge-medium {
+            @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-950 text-yellow-200 border border-yellow-800;
+        }
+        
+        .badge-low {
+            @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-950 text-green-200 border border-green-800;
+        }
+        
+        .device-id-badge {
+            @apply inline-flex items-center px-3 py-1 rounded-md bg-slate-800 border border-cyan-500/30 text-cyan-300 text-xs font-mono;
+        }
+        
+        .pulse-online {
+            animation: pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .timeline-line {
+            background: linear-gradient(to bottom, rgba(0, 200, 255, 0.5), transparent);
+        }
+        
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #00c8ff 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .test-pass { color: #4ade80; }
+        .test-fail { color: #f87171; }
+        .test-error { color: #fbbf24; }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 200, 255, 0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 200, 255, 0.5); }
+    </style>
+</head>
+<body class="text-gray-100">
+    <!-- Header -->
+    <header class="glass-panel sticky top-0 z-50 border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center quantum-glow">
+                        <i class="fas fa-shield-alt text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold gradient-text">AMCIS 6.0</h1>
+                        <p class="text-xs text-gray-400">Quantum-Secure Terminal Security</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/30">
+                        <div class="w-2 h-2 rounded-full bg-green-400 pulse-online"></div>
+                        <span class="text-sm text-green-400 font-medium">Protected</span>
+                    </div>
+                    <button class="p-2 rounded-lg hover:bg-white/5 transition-colors">
+                        <i class="fas fa-bell text-gray-400"></i>
+                    </button>
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center">
+                        <span class="text-sm font-bold">JW</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Title -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold">Security Test Overview</h2>
+            <p class="text-gray-400 mt-1">Real-time AMCIS Q-SEC CORE module testing results</p>
+        </div>
+
+        <!-- Key Metrics Grid (Base44 MetricCard Style) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <!-- Active Tests Card -->
+            <div class="metric-card rounded-xl p-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-sm text-gray-400 uppercase tracking-wide">Total Tests</p>
+                        <div class="flex items-baseline gap-2 mt-2">
+                            <span class="text-3xl font-bold stat-number">32</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Test cases executed</p>
+                    </div>
+                    <div class="p-3 bg-cyan-500/10 rounded-lg">
+                        <i class="fas fa-vial text-cyan-400 text-xl"></i>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 mt-4">
+                    <i class="fas fa-check-circle text-green-400 text-sm"></i>
+                    <span class="text-xs text-green-400 font-semibold">Complete</span>
+                </div>
+            </div>
+
+            <!-- Passed Tests Card -->
+            <div class="metric-card rounded-xl p-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-sm text-gray-400 uppercase tracking-wide">Passed</p>
+                        <div class="flex items-baseline gap-2 mt-2">
+                            <span class="text-3xl font-bold text-green-400">26</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">81% success rate</p>
+                    </div>
+                    <div class="p-3 bg-green-500/10 rounded-lg">
+                        <i class="fas fa-check text-green-400 text-xl"></i>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 mt-4">
+                    <i class="fas fa-arrow-up text-green-400 text-sm"></i>
+                    <span class="text-xs text-green-400 font-semibold">Operational</span>
+                </div>
+            </div>
+
+            <!-- Failed Tests Card -->
+            <div class="metric-card rounded-xl p-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-sm text-gray-400 uppercase tracking-wide">Failed</p>
+                        <div class="flex items-baseline gap-2 mt-2">
+                            <span class="text-3xl font-bold text-red-400">4</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Require attention</p>
+                    </div>
+                    <div class="p-3 bg-red-500/10 rounded-lg">
+                        <i class="fas fa-times text-red-400 text-xl"></i>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 mt-4">
+                    <i class="fas fa-exclamation-triangle text-red-400 text-sm"></i>
+                    <span class="text-xs text-red-400 font-semibold">Action needed</span>
+                </div>
+            </div>
+
+            <!-- Errors Card -->
+            <div class="metric-card rounded-xl p-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-sm text-gray-400 uppercase tracking-wide">Errors</p>
+                        <div class="flex items-baseline gap-2 mt-2">
+                            <span class="text-3xl font-bold text-yellow-400">2</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Module issues</p>
+                    </div>
+                    <div class="p-3 bg-yellow-500/10 rounded-lg">
+                        <i class="fas fa-exclamation text-yellow-400 text-xl"></i>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 mt-4">
+                    <i class="fas fa-wrench text-yellow-400 text-sm"></i>
+                    <span class="text-xs text-yellow-400 font-semibold">Fix pending</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results by Module -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Crypto Module -->
+            <div class="glass-panel rounded-xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-blue-500/20 rounded-lg">
+                            <i class="fas fa-key text-blue-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold">Post-Quantum Cryptography</h3>
+                            <p class="text-xs text-gray-400">ML-KEM, ML-DSA, Key Management</p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">Partial</span>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle test-pass"></i>
+                            <span class="text-sm">ML-KEM Key Generation</span>
+                        </div>
+                        <span class="text-xs text-gray-500">FIPS 203</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-red-500/30">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-times-circle test-fail"></i>
+                            <span class="text-sm">ML-KEM Encapsulation</span>
+                        </div>
+                        <span class="text-xs text-red-400">Secret mismatch</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle test-pass"></i>
+                            <span class="text-sm">ML-DSA Key Generation</span>
+                        </div>
+                        <span class="text-xs text-gray-500">FIPS 204</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-red-500/30">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-times-circle test-fail"></i>
+                            <span class="text-sm">ML-DSA Signature Verify</span>
+                        </div>
+                        <span class="text-xs text-red-400">False positive</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle test-pass"></i>
+                            <span class="text-sm">Key Manager</span>
+                        </div>
+                        <span class="text-xs text-gray-500">37 keys</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle test-pass"></i>
+                            <span class="text-sm">Key Rotation</span>
+                        </div>
+                        <span class="text-xs text-gray-500">Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kernel Module -->
+            <div class="glass-panel rounded-xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-cyan-500/20 rounded-lg">
+                            <i class="fas fa-microchip text-cyan-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold">AMCIS Kernel</h3>
+                            <p class="text-xs text-gray-400">Core system & secure boot</p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 border border-green-500/30">Operational</span>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle test-pass"></i>
+                            <span class="text-sm">Singleton Pattern</span>
+                        </div>
+                        <span class="text-xs text-gray-500">OK</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle test-pass"></i>
+                            <span class="text-sm">Initial State</span>
+                        </div>
+                        <span class="text-xs text-gray-500">LOCKDOWN</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle test-pass"></i>
+                            <span class="text-sm">Secure Boot</span>
+                        </div>
+                        <span class="text-xs text-gray-500">Verified</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle test-pass"></i>
+                            <span class="text-sm">Module Registration</span>
+                        </div>
+                        <span class="text-xs text-gray-500">Active</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle test-pass"></i>
+                            <span class="text-sm">Event Emission</span>
+                        </div>
+                        <span class="text-xs text-gray-500">Queue OK</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle test-pass"></i>
+                            <span class="text-sm">Health Check</span>
+                        </div>
+                        <span class="text-xs text-gray-500">Monitoring</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trust Engine & EDR -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Trust Engine -->
+            <div class="glass-panel rounded-xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-purple-500/20 rounded-lg">
+                            <i class="fas fa-shield-alt text-purple-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold">Zero-Trust Execution</h3>
+                            <p class="text-xs text-gray-400">Trust scoring & evaluation</p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">Partial</span>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle test-pass"></i>
+                            <span class="text-sm">Trust Evaluation</span>
+                        </div>
+                        <span class="text-xs text-gray-500">Score: 0.61</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle test-pass"></i>
+                            <span class="text-sm">Trust Factors</span>
+                        </div>
+                        <span class="text-xs text-gray-500">All present</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-red-500/30">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-times-circle test-fail"></i>
+                            <span class="text-sm">Suspicious Pattern Detection</span>
+                        </div>
+                        <span class="text-xs text-red-400">Exception raised</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle test-pass"></i>
+                            <span class="text-sm">Strict Mode</span>
+                        </div>
+                        <span class="text-xs text-gray-500">Threshold: 0.6</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EDR Module -->
+            <div class="glass-panel rounded-xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-orange-500/20 rounded-lg">
+                            <i class="fas fa-search text-orange-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold">Endpoint Detection</h3>
+                            <p class="text-xs text-gray-400">Process & memory monitoring</p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">Partial</span>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle test-pass"></i>
+                            <span class="text-sm">Process Scan</span>
+                        </div>
+                        <span class="text-xs text-gray-500">Graph OK</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle test-pass"></i>
+                            <span class="text-sm">Process Lineage</span>
+                        </div>
+                        <span class="text-xs text-gray-500">Tracking</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-red-500/30">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-times-circle test-fail"></i>
+                            <span class="text-sm">Graph Update</span>
+                        </div>
+                        <span class="text-xs text-red-400">Slow: 25.6s</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-yellow-500/30">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-exclamation-circle test-error"></i>
+                            <span class="text-sm">File Integrity Monitor</span>
+                        </div>
+                        <span class="text-xs text-yellow-400">Module missing</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Merkle Log & Timeline (Base44 ThreatTimeline Style) -->
+        <div class="glass-panel rounded-xl p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-green-500/20 rounded-lg">
+                        <i class="fas fa-list-alt text-green-400 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold">Merkle Log & Security Events</h3>
+                        <p class="text-xs text-gray-400">Tamper-evident audit trail</p>
+                    </div>
+                </div>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 border border-green-500/30">Secure</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Log Stats -->
+                <div class="lg:col-span-1 space-y-4">
+                    <div class="p-4 bg-white/5 rounded-lg text-center">
+                        <p class="text-3xl font-bold text-green-400">68</p>
+                        <p class="text-xs text-gray-400 mt-1">Total Entries</p>
+                    </div>
+                    <div class="p-4 bg-white/5 rounded-lg text-center">
+                        <p class="text-3xl font-bold text-cyan-400">VALID</p>
+                        <p class="text-xs text-gray-400 mt-1">Integrity Status</p>
+                    </div>
+                    <div class="p-4 bg-white/5 rounded-lg text-center">
+                        <p class="text-sm font-mono text-purple-400 truncate">2451fea3...</p>
+                        <p class="text-xs text-gray-400 mt-1">Root Hash</p>
+                    </div>
+                </div>
+
+                <!-- Timeline -->
+                <div class="lg:col-span-2 relative">
+                    <div class="absolute left-4 top-0 bottom-0 w-0.5 timeline-line"></div>
+                    <div class="space-y-4">
+                        <div class="relative pl-12">
+                            <div class="absolute left-2 top-2 w-4 h-4 rounded-full bg-blue-500 border-2 border-slate-800 shadow-lg"></div>
+                            <div class="p-3 bg-blue-900/20 border border-blue-700/50 rounded-lg">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-xs font-bold uppercase text-blue-300">INFO</span>
+                                    <span class="text-xs text-gray-500">•</span>
+                                    <span class="text-xs text-gray-400">Log Entry #68</span>
+                                </div>
+                                <p class="text-sm">Security event appended to Merkle tree</p>
+                                <p class="text-xs text-gray-500 mt-1">2 minutes ago</p>
+                            </div>
+                        </div>
+                        <div class="relative pl-12">
+                            <div class="absolute left-2 top-2 w-4 h-4 rounded-full bg-yellow-500 border-2 border-slate-800 shadow-lg"></div>
+                            <div class="p-3 bg-yellow-900/20 border border-yellow-700/50 rounded-lg">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-xs font-bold uppercase text-yellow-300">MEDIUM</span>
+                                    <span class="text-xs text-gray-500">•</span>
+                                    <span class="text-xs text-gray-400">ORPHAN_PROCESS</span>
+                                </div>
+                                <p class="text-sm">csrss.exe detected without parent process</p>
+                                <p class="text-xs text-gray-500 mt-1">2 minutes ago</p>
+                            </div>
+                        </div>
+                        <div class="relative pl-12">
+                            <div class="absolute left-2 top-2 w-4 h-4 rounded-full bg-red-500 border-2 border-slate-800 shadow-lg animate-pulse"></div>
+                            <div class="p-3 bg-red-900/20 border border-red-700/50 rounded-lg">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-xs font-bold uppercase text-red-300">HIGH</span>
+                                    <span class="text-xs text-gray-500">•</span>
+                                    <span class="text-xs text-gray-400">SLOW_OPERATION</span>
+                                </div>
+                                <p class="text-sm">Process scan exceeded time threshold (25.6s)</p>
+                                <p class="text-xs text-gray-500 mt-1">2 minutes ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Module Status Grid -->
+        <div class="glass-panel rounded-xl p-6">
+            <h3 class="text-lg font-semibold mb-6">Module Status Overview</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div class="p-4 bg-white/5 rounded-lg text-center hover:bg-white/10 transition-colors">
+                    <i class="fas fa-microchip text-cyan-400 text-2xl mb-2"></i>
+                    <p class="text-sm font-medium">Kernel</p>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 mt-2 text-xs bg-green-500/20 text-green-400 rounded-full">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                        Active
+                    </span>
+                </div>
+                <div class="p-4 bg-white/5 rounded-lg text-center hover:bg-white/10 transition-colors">
+                    <i class="fas fa-key text-blue-400 text-2xl mb-2"></i>
+                    <p class="text-sm font-medium">Crypto</p>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 mt-2 text-xs bg-yellow-500/20 text-yellow-400 rounded-full">
+                        <span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>
+                        Partial
+                    </span>
+                </div>
+                <div class="p-4 bg-white/5 rounded-lg text-center hover:bg-white/10 transition-colors">
+                    <i class="fas fa-shield-alt text-purple-400 text-2xl mb-2"></i>
+                    <p class="text-sm font-medium">Trust Engine</p>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 mt-2 text-xs bg-green-500/20 text-green-400 rounded-full">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                        Active
+                    </span>
+                </div>
+                <div class="p-4 bg-white/5 rounded-lg text-center hover:bg-white/10 transition-colors">
+                    <i class="fas fa-search text-orange-400 text-2xl mb-2"></i>
+                    <p class="text-sm font-medium">EDR</p>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 mt-2 text-xs bg-yellow-500/20 text-yellow-400 rounded-full">
+                        <span class="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>
+                        Partial
+                    </span>
+                </div>
+                <div class="p-4 bg-white/5 rounded-lg text-center hover:bg-white/10 transition-colors">
+                    <i class="fas fa-brain text-pink-400 text-2xl mb-2"></i>
+                    <p class="text-sm font-medium">AI Security</p>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 mt-2 text-xs bg-green-500/20 text-green-400 rounded-full">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                        Active
+                    </span>
+                </div>
+                <div class="p-4 bg-white/5 rounded-lg text-center hover:bg-white/10 transition-colors">
+                    <i class="fas fa-network-wired text-indigo-400 text-2xl mb-2"></i>
+                    <p class="text-sm font-medium">Network</p>
+                    <span class="inline-flex items-center gap-1 px-2 py-1 mt-2 text-xs bg-green-500/20 text-green-400 rounded-full">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                        Active
+                    </span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-gray-400 text-sm">AMCIS Q-SEC CORE v1.0.0 | Test Run: 2026-02-26 21:37:00</p>
+            <p class="text-gray-500 text-xs mt-2">Quantum-Secure Terminal Security Framework</p>
+        </div>
+    </footer>
+
+    <script>
+        // Animate metrics on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.metric-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,815 @@
+openapi: 3.0.3
+info:
+  title: AMCIS Q-Sec-Core API
+  description: |
+    Enterprise-grade quantum-resistant cybersecurity platform API.
+    
+    Features:
+    - Post-quantum cryptography (ML-KEM, ML-DSA)
+    - Threat detection and response
+    - Compliance management (NIST CSF 2.0)
+    - Audit logging
+    - Key lifecycle management
+    
+  version: 1.0.0
+  contact:
+    name: AMCIS Engineering
+    email: engineering@amcis.internal
+  license:
+    name: Commercial License
+    url: https://amcis.internal/licenses/commercial
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://api.amcis.io/v1
+    description: Production server
+
+security:
+  - bearerAuth: []
+  - apiKeyAuth: []
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Keys
+    description: Key management operations
+  - name: Threats
+    description: Threat detection and intelligence
+  - name: Compliance
+    description: Compliance assessment and reporting
+  - name: Logs
+    description: Audit logging
+  - name: Metrics
+    description: Prometheus metrics
+
+paths:
+  # Health Endpoints
+  /health/live:
+    get:
+      tags: [Health]
+      summary: Liveness probe
+      description: Kubernetes liveness probe endpoint
+      security: []
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        '503':
+          description: Service is not alive
+
+  /health/ready:
+    get:
+      tags: [Health]
+      summary: Readiness probe
+      description: Kubernetes readiness probe endpoint
+      security: []
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+        '503':
+          description: Service is not ready
+
+  # Key Management Endpoints
+  /api/v1/keys:
+    get:
+      tags: [Keys]
+      summary: List keys
+      description: List all cryptographic keys
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [symmetric, asymmetric, pqc]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, expired, revoked]
+      responses:
+        '200':
+          description: List of keys
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/KeyInfo'
+
+    post:
+      tags: [Keys]
+      summary: Generate key
+      description: Generate a new cryptographic key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KeyGenerationRequest'
+      responses:
+        '201':
+          description: Key created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyInfo'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/keys/{key_id}:
+    get:
+      tags: [Keys]
+      summary: Get key details
+      description: Get detailed information about a specific key
+      parameters:
+        - name: key_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Key details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyDetails'
+        '404':
+          description: Key not found
+
+    delete:
+      tags: [Keys]
+      summary: Revoke key
+      description: Revoke a cryptographic key
+      parameters:
+        - name: key_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Key revoked successfully
+        '404':
+          description: Key not found
+
+  /api/v1/keys/{key_id}/rotate:
+    post:
+      tags: [Keys]
+      summary: Rotate key
+      description: Rotate a cryptographic key to a new version
+      parameters:
+        - name: key_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Key rotated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyInfo'
+
+  /api/v1/keys/{key_id}/encrypt:
+    post:
+      tags: [Keys]
+      summary: Encrypt data
+      description: Encrypt data using the specified key
+      parameters:
+        - name: key_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plaintext:
+                  type: string
+                  format: base64
+                associated_data:
+                  type: string
+                  format: base64
+      responses:
+        '200':
+          description: Encryption successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ciphertext:
+                    type: string
+                    format: base64
+                  iv:
+                    type: string
+                    format: base64
+
+  /api/v1/keys/{key_id}/decrypt:
+    post:
+      tags: [Keys]
+      summary: Decrypt data
+      description: Decrypt data using the specified key
+      parameters:
+        - name: key_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ciphertext:
+                  type: string
+                  format: base64
+                iv:
+                  type: string
+                  format: base64
+                associated_data:
+                  type: string
+                  format: base64
+      responses:
+        '200':
+          description: Decryption successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plaintext:
+                    type: string
+                    format: base64
+
+  # Threat Endpoints
+  /api/v1/threats:
+    get:
+      tags: [Threats]
+      summary: List threats
+      description: List detected security threats
+      parameters:
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [critical, high, medium, low]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, contained, resolved, false_positive]
+        - name: since
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: List of threats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  threats:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ThreatInfo'
+
+    post:
+      tags: [Threats]
+      summary: Report threat
+      description: Report a new security threat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThreatReportRequest'
+      responses:
+        '201':
+          description: Threat reported successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreatInfo'
+
+  /api/v1/threats/{threat_id}:
+    get:
+      tags: [Threats]
+      summary: Get threat details
+      parameters:
+        - name: threat_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Threat details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThreatDetails'
+        '404':
+          description: Threat not found
+
+  /api/v1/threats/{threat_id}/respond:
+    post:
+      tags: [Threats]
+      summary: Respond to threat
+      description: Execute automated response to threat
+      parameters:
+        - name: threat_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [contain, isolate, block, investigate]
+      responses:
+        '200':
+          description: Response executed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action_id:
+                    type: string
+                  status:
+                    type: string
+
+  # Compliance Endpoints
+  /api/v1/compliance/assessment:
+    get:
+      tags: [Compliance]
+      summary: Get compliance assessment
+      description: Get current compliance assessment status
+      responses:
+        '200':
+          description: Compliance assessment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceAssessment'
+
+    post:
+      tags: [Compliance]
+      summary: Run compliance assessment
+      description: Run a new compliance assessment
+      responses:
+        '202':
+          description: Assessment started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assessment_id:
+                    type: string
+                  status:
+                    type: string
+                    enum: [running]
+
+  /api/v1/compliance/controls:
+    get:
+      tags: [Compliance]
+      summary: List controls
+      description: List all compliance controls
+      parameters:
+        - name: framework
+          in: query
+          schema:
+            type: string
+            enum: [nist_csf_2.0]
+        - name: function
+          in: query
+          schema:
+            type: string
+            enum: [GOVERN, IDENTIFY, PROTECT, DETECT, RESPOND, RECOVER]
+      responses:
+        '200':
+          description: List of controls
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  controls:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ControlInfo'
+
+  /api/v1/compliance/controls/{control_id}:
+    get:
+      tags: [Compliance]
+      summary: Get control details
+      parameters:
+        - name: control_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: PR.DS
+      responses:
+        '200':
+          description: Control details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ControlDetails'
+
+  /api/v1/compliance/report:
+    get:
+      tags: [Compliance]
+      summary: Generate compliance report
+      description: Generate compliance report in various formats
+      parameters:
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, pdf, html]
+            default: json
+      responses:
+        '200':
+          description: Compliance report
+          content:
+            application/json:
+              schema:
+                type: object
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            text/html:
+              schema:
+                type: string
+
+  # Audit Log Endpoints
+  /api/v1/logs:
+    get:
+      tags: [Logs]
+      summary: Query audit logs
+      description: Query audit logs with filters
+      parameters:
+        - name: start_time
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: end_time
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - name: event_type
+          in: query
+          schema:
+            type: string
+        - name: user_id
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+            maximum: 10000
+      responses:
+        '200':
+          description: Audit log entries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuditLogEntry'
+                  total:
+                    type: integer
+
+  /api/v1/logs/export:
+    post:
+      tags: [Logs]
+      summary: Export audit logs
+      description: Export audit logs for compliance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                start_time:
+                  type: string
+                  format: date-time
+                end_time:
+                  type: string
+                  format: date-time
+                format:
+                  type: string
+                  enum: [csv, json, parquet]
+      responses:
+        '200':
+          description: Exported logs
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  # Metrics Endpoint
+  /metrics:
+    get:
+      tags: [Metrics]
+      summary: Prometheus metrics
+      description: Get Prometheus-compatible metrics
+      security: []
+      responses:
+        '200':
+          description: Prometheus metrics
+          content:
+            text/plain:
+              schema:
+                type: string
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authentication
+    
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: healthy
+        version:
+          type: string
+          example: 1.0.0
+        timestamp:
+          type: string
+          format: date-time
+
+    ReadinessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ready
+        checks:
+          type: object
+          properties:
+            database:
+              type: object
+              properties:
+                status:
+                  type: string
+            redis:
+              type: object
+              properties:
+                status:
+                  type: string
+
+    KeyInfo:
+      type: object
+      properties:
+        key_id:
+          type: string
+          format: uuid
+        key_type:
+          type: string
+          enum: [AES-256-GCM, RSA-4096, ML-KEM-768, ML-DSA-65]
+        status:
+          type: string
+          enum: [active, expired, revoked]
+        created_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+
+    KeyDetails:
+      allOf:
+        - $ref: '#/components/schemas/KeyInfo'
+        - type: object
+          properties:
+            metadata:
+              type: object
+            usage_count:
+              type: integer
+            last_used:
+              type: string
+              format: date-time
+
+    KeyGenerationRequest:
+      type: object
+      required:
+        - key_type
+        - purpose
+      properties:
+        key_type:
+          type: string
+          enum: [AES-256-GCM, RSA-4096, ML-KEM-768, ML-DSA-65]
+        purpose:
+          type: string
+        ttl_days:
+          type: integer
+          minimum: 1
+          maximum: 365
+
+    ThreatInfo:
+      type: object
+      properties:
+        threat_id:
+          type: string
+        severity:
+          type: string
+          enum: [critical, high, medium, low]
+        category:
+          type: string
+        status:
+          type: string
+        detected_at:
+          type: string
+          format: date-time
+
+    ThreatDetails:
+      allOf:
+        - $ref: '#/components/schemas/ThreatInfo'
+        - type: object
+          properties:
+            description:
+              type: string
+            source_ip:
+              type: string
+            indicators:
+              type: array
+              items:
+                type: string
+            recommended_actions:
+              type: array
+              items:
+                type: string
+
+    ThreatReportRequest:
+      type: object
+      required:
+        - category
+        - description
+      properties:
+        category:
+          type: string
+        description:
+          type: string
+        severity:
+          type: string
+          enum: [critical, high, medium, low]
+        indicators:
+          type: array
+          items:
+            type: string
+
+    ComplianceAssessment:
+      type: object
+      properties:
+        overall_score:
+          type: number
+          minimum: 0
+          maximum: 1
+        framework:
+          type: string
+        last_assessed:
+          type: string
+          format: date-time
+        function_scores:
+          type: object
+          properties:
+            GOVERN:
+              type: number
+            IDENTIFY:
+              type: number
+            PROTECT:
+              type: number
+            DETECT:
+              type: number
+            RESPOND:
+              type: number
+            RECOVER:
+              type: number
+
+    ControlInfo:
+      type: object
+      properties:
+        control_id:
+          type: string
+        function:
+          type: string
+        category:
+          type: string
+        status:
+          type: string
+          enum: [not_implemented, partially_implemented, implemented, exceeds_requirements]
+        score:
+          type: number
+
+    ControlDetails:
+      allOf:
+        - $ref: '#/components/schemas/ControlInfo'
+        - type: object
+          properties:
+            description:
+              type: string
+            implementation_examples:
+              type: array
+              items:
+                type: string
+            gaps:
+              type: array
+              items:
+                type: string
+            remediation:
+              type: string
+
+    AuditLogEntry:
+      type: object
+      properties:
+        log_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        event_type:
+          type: string
+        user_id:
+          type: string
+        resource:
+          type: string
+        action:
+          type: string
+        result:
+          type: string
+        ip_address:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object

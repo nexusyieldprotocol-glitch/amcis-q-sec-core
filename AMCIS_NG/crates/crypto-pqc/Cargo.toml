@@ -1,0 +1,36 @@
+[package]
+name = "amcis-crypto-pqc"
+version = "1.0.0-alpha"
+edition = "2021"
+authors = ["AMCIS Security Team"]
+description = "Post-quantum cryptography for AMCIS NG"
+
+[dependencies]
+# Post-quantum crypto from pqcrypto
+pqcrypto-kyber = "0.7"
+pqcrypto-dilithium = "0.5"
+pqcrypto-sphincsplus = "0.6"
+pqcrypto-traits = "0.3"
+
+# Crypto utilities
+sha2 = "0.10"
+sha3 = "0.10"
+blake3 = "1.5"
+rand = { version = "0.8", features = ["std_rng"] }
+zeroize = { version = "1.7", features = ["derive"] }
+base64 = "0.22"
+hex = "0.4"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Logging
+tracing = "0.1"
+
+[dev-dependencies]
+criterion = "0.5"

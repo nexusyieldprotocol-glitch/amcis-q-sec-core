@@ -1,0 +1,67 @@
+digraph "AMCIS System Architecture" {
+	graph [fontcolor="#2D3436" fontname="Sans-Serif" fontsize=15 label="AMCIS System Architecture" nodesep=0.60 pad=2.0 rankdir=TB ranksep=0.75 splines=ortho]
+	node [fixedsize=true fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 height=1.4 imagescale=true labelloc=b shape=box style=rounded width=1.4]
+	edge [color="#7B8894"]
+	subgraph "cluster_User Interfaces" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="User Interfaces" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		"464f1a548f574e85879719660a991084" [label=CLI height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/onprem/client\client.png" shape=none]
+		"3fd23605046d475aa83a9eddf07c3d85" [label="REST API" height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/onprem/network\nginx.png" shape=none]
+		"3cbdf6d518a441e2be04741bd57f1b27" [label=Dashboard height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/onprem/client\client.png" shape=none]
+	}
+	subgraph "cluster_Core Layer" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Core Layer" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		bd0c5584fb20434e9724f722d7b8334d [label="AMCIS Kernel" height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/generic/compute\rack.png" shape=none]
+		"93da08422b884139b88b01470f23d829" [label="Trust Engine" height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/generic/compute\rack.png" shape=none]
+		"99fc4e9d093e4f74808d111b38255ee6" [label="Policy Engine" height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/generic/compute\rack.png" shape=none]
+	}
+	subgraph "cluster_Security Modules" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Security Modules" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		"19e41b5df04f4e3587043a069e638074" [label="Crypto Module" height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/programming/language\python.png" shape=none]
+		"49e56236eed2455fb47aa04ba0327d06" [label="EDR/XDR" height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/programming/language\python.png" shape=none]
+		"80504e553c5d4479b3f8feecc49e2774" [label="Network Security" height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/programming/language\python.png" shape=none]
+		"095551c0bc6349ac984c738942b1bb7b" [label="AI Security" height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/programming/language\python.png" shape=none]
+		"0ebf1d1165554559a3adb40c7d357640" [label=Compliance height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/programming/language\python.png" shape=none]
+		"0cf76d4e368444f9bd84bb236d2e1708" [label="Threat Intel" height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/programming/language\python.png" shape=none]
+		"58b39778adf747fca8c76bfa5b9bf59d" [label="Secrets Mgr" height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/programming/language\python.png" shape=none]
+		"6bfb4dcb715246adb702fd2744f6a97e" [label=Forensics height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/programming/language\python.png" shape=none]
+		ae3eb02f6cc844bda7a56190c84cf126 [label=SOAR height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/programming/language\python.png" shape=none]
+	}
+	subgraph "cluster_Data Layer" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Data Layer" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		"14904c72656a47268c6c952802a5cd36" [label=PostgreSQL height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/onprem/database\postgresql.png" shape=none]
+		"2e5546136fd444d0850a200b1ede6b16" [label="Redis Cache" height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/onprem/inmemory\redis.png" shape=none]
+		"15071f62812d44c6bf9482e9e16511ca" [label="HashiCorp Vault" height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/onprem/security\vault.png" shape=none]
+		abd0470ac73747a6881fd8000645706d [label="Audit Logs" height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/generic/storage\storage.png" shape=none]
+	}
+	subgraph cluster_Monitoring {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label=Monitoring labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		d51d7999b12b4ff38d3271acab5dd54c [label=Prometheus height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/onprem/monitoring\prometheus.png" shape=none]
+		baf8974fc5b347feaca7b664d6ba5180 [label=Grafana height=1.9 image="C:\Users\L337B\miniconda3\Lib\site-packages\resources/onprem/monitoring\grafana.png" shape=none]
+	}
+	"464f1a548f574e85879719660a991084" -> bd0c5584fb20434e9724f722d7b8334d [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"3fd23605046d475aa83a9eddf07c3d85" -> bd0c5584fb20434e9724f722d7b8334d [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"3cbdf6d518a441e2be04741bd57f1b27" -> bd0c5584fb20434e9724f722d7b8334d [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	bd0c5584fb20434e9724f722d7b8334d -> "93da08422b884139b88b01470f23d829" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	bd0c5584fb20434e9724f722d7b8334d -> "99fc4e9d093e4f74808d111b38255ee6" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	bd0c5584fb20434e9724f722d7b8334d -> "19e41b5df04f4e3587043a069e638074" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	bd0c5584fb20434e9724f722d7b8334d -> "49e56236eed2455fb47aa04ba0327d06" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	bd0c5584fb20434e9724f722d7b8334d -> "80504e553c5d4479b3f8feecc49e2774" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	bd0c5584fb20434e9724f722d7b8334d -> "095551c0bc6349ac984c738942b1bb7b" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	bd0c5584fb20434e9724f722d7b8334d -> "0ebf1d1165554559a3adb40c7d357640" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	bd0c5584fb20434e9724f722d7b8334d -> "0cf76d4e368444f9bd84bb236d2e1708" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	bd0c5584fb20434e9724f722d7b8334d -> "58b39778adf747fca8c76bfa5b9bf59d" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	bd0c5584fb20434e9724f722d7b8334d -> "6bfb4dcb715246adb702fd2744f6a97e" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	bd0c5584fb20434e9724f722d7b8334d -> ae3eb02f6cc844bda7a56190c84cf126 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"19e41b5df04f4e3587043a069e638074" -> "15071f62812d44c6bf9482e9e16511ca" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"49e56236eed2455fb47aa04ba0327d06" -> "14904c72656a47268c6c952802a5cd36" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"80504e553c5d4479b3f8feecc49e2774" -> "14904c72656a47268c6c952802a5cd36" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"095551c0bc6349ac984c738942b1bb7b" -> "14904c72656a47268c6c952802a5cd36" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"0ebf1d1165554559a3adb40c7d357640" -> "14904c72656a47268c6c952802a5cd36" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"0cf76d4e368444f9bd84bb236d2e1708" -> "2e5546136fd444d0850a200b1ede6b16" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"58b39778adf747fca8c76bfa5b9bf59d" -> "15071f62812d44c6bf9482e9e16511ca" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"6bfb4dcb715246adb702fd2744f6a97e" -> "14904c72656a47268c6c952802a5cd36" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	ae3eb02f6cc844bda7a56190c84cf126 -> "14904c72656a47268c6c952802a5cd36" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	bd0c5584fb20434e9724f722d7b8334d -> abd0470ac73747a6881fd8000645706d [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	bd0c5584fb20434e9724f722d7b8334d -> d51d7999b12b4ff38d3271acab5dd54c [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 style=dotted]
+	d51d7999b12b4ff38d3271acab5dd54c -> baf8974fc5b347feaca7b664d6ba5180 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+}

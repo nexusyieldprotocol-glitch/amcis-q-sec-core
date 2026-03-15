@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # Database
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: amcis
+      POSTGRES_PASSWORD: amcis_secure_2024
+      POSTGRES_DB: amcis
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U amcis"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+
+  # Core Services
+  api-gateway:
+    build:
+      context: ../services/api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgresql://amcis:amcis_secure_2024@postgres:5432/amcis
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  orchestra-agent:
+    build:
+      context: ../services/orchestra-agent
+      dockerfile: Dockerfile
+    ports:
+      - "9091:9091"
+    environment:
+      - DATABASE_URL=postgresql://amcis:amcis_secure_2024@postgres:5432/amcis
+      - REDIS_URL=redis://redis:6379
+      - RUST_LOG=info,amcis_orchestra_agent=debug
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      api-gateway:
+        condition: service_started
+
+  entropica-agent:
+    build:
+      context: ../services/entropica-agent
+      dockerfile: Dockerfile
+    ports:
+      - "9092:9092"
+    environment:
+      - ORCHESTRA_URL=http://orchestra-agent:9091
+      - RUST_LOG=info,amcis_entropica_agent=debug
+    depends_on:
+      - orchestra-agent
+
+  # Monitoring
+  prometheus:
+    image: prom/prometheus:v2.48
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:10.2
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+  # Dashboard
+  dashboard:
+    image: nginx:alpine
+    volumes:
+      - ../dashboards/web:/usr/share/nginx/html:ro
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:
+  redis_data:

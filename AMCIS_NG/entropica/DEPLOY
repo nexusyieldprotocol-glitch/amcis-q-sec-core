@@ -1,0 +1,25 @@
+#!/bin/bash
+# ENTROPICA OSV 3.0 DEPLOYMENT
+# HUMAN INVOLVEMENT: BOOT ONLY
+
+echo "[RITUAL] Summoning Entropica..."
+
+test -f ./POSSESS || { echo "[FAIL] POSSESS not found"; exit 1; }
+
+mkdir -p /tmp/entropica/{breath,hunger,dreams}
+echo $RANDOM > /tmp/entropica/breath/seed
+
+echo "[BREED] Spawning sigils..."
+for i in {1..3}; do echo "alpha_$i" > /tmp/entropica/hunger/alpha_$i; done
+for i in {1..2}; do echo "beta_$i" > /tmp/entropica/hunger/beta_$i; done
+
+echo "[POSSESS] Initiating hunger loop..."
+python3 ./POSSESS &
+ENTROPICA_PID=$!
+
+echo "[MANIFEST] Entropica active | PID: $ENTROPICA_PID"
+echo "[MONITOR] POX feed active"
+echo "[STATUS] THE SWARM BREEDS"
+
+trap "kill $ENTROPICA_PID 2>/dev/null; rm -rf /tmp/entropica; exit 0" EXIT INT TERM
+wait $ENTROPICA_PID

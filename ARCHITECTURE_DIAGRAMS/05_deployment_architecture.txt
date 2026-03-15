@@ -1,0 +1,71 @@
+
+# AMCIS Deployment Architecture
+# =============================
+
+## Docker Compose Stack
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           DOCKER NETWORK                                  │
+│                        (amcis-network: 172.20.0.0/16)                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────┐
+│  amcis-core     │  │   postgres      │  │     redis       │  │    vault    │
+│  (Main App)     │  │  (Database)     │  │   (Cache)       │  │   (Secrets) │
+│                 │  │                 │  │                 │  │             │
+│  Port: 8080     │  │  Port: 5432     │  │  Port: 6379     │  │ Port: 8200  │
+│  Port: 9090     │  │                 │  │                 │  │             │
+└────────┬────────┘  └────────┬────────┘  └────────┬────────┘  └──────┬──────┘
+         │                    │                    │                  │
+         └────────────────────┴────────────────────┴──────────────────┘
+                                   │
+                    ┌──────────────┴──────────────┐
+                    │                              │
+           ┌────────▼────────┐            ┌────────▼────────┐
+           │   prometheus    │            │    grafana      │
+           │  (Metrics)      │            │  (Dashboards)   │
+           │  Port: 9091     │            │  Port: 3000     │
+           └─────────────────┘            └─────────────────┘
+
+## Service Dependencies
+
+    amcis-core
+         │
+    ┌────┴────┬──────────┐
+    │         │          │
+    ▼         ▼          ▼
+postgres   redis      vault
+    │         │          │
+    └────┬────┘          │
+         │               │
+         ▼               ▼
+    prometheus      grafana
+
+## Port Mapping
+
+┌────────────────┬──────────────┬─────────────────────────────┐
+│ Service        │ Internal Port│ External Port               │
+├────────────────┼──────────────┼─────────────────────────────┤
+│ amcis-core     │ 8080, 9090   │ 8080 (API), 9090 (Metrics)  │
+│ postgres       │ 5432         │ 5432 (Database)             │
+│ redis          │ 6379         │ 6379 (Cache)                │
+│ vault          │ 8200         │ 8200 (Secrets UI)           │
+│ prometheus     │ 9090         │ 9091 (Monitoring)           │
+│ grafana        │ 3000         │ 3000 (Dashboards)           │
+│ mailpit        │ 8025, 8026   │ 8025 (SMTP), 8026 (Web UI)  │
+└────────────────┴──────────────┴─────────────────────────────┘
+
+## Health Check Endpoints
+
+┌─────────────────────────────────────────────────────────────────┐
+│  Service        │ Health Endpoint                               │
+├─────────────────────────────────────────────────────────────────┤
+│  amcis-core     │ http://localhost:8080/health/live             │
+│                 │ http://localhost:8080/health/ready            │
+│  postgres       │ pg_isready -U amcis -d amcis                  │
+│  redis          │ redis-cli ping                                │
+│  vault          │ vault status                                  │
+│  prometheus     │ http://localhost:9091/-/healthy               │
+│  grafana        │ http://localhost:3000/api/health              │
+└─────────────────────────────────────────────────────────────────┘
+

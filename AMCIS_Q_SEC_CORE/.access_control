@@ -1,0 +1,58 @@
+# AMCIS Q-SEC CORE - ACCESS CONTROL CONFIGURATION
+# =================================================
+# GENERATED: 2026-02-26T05:18:00Z
+# DEVICE: WORKSTATION-L337B
+# CLASSIFICATION: COMMERCIAL-CONFIDENTIAL
+# 
+# WARNING: Unauthorized access to this file constitutes
+# a violation of the AMCIS Commercial License Agreement.
+
+[device_fingerprint]
+id = 960565071b20d95b14446cf75b58bf1c
+algorithm = sha3-256
+binding = hardware+os
+rotation_days = 90
+
+[access_credentials]
+# Master access key - Store in hardware security module for production
+master_key = C5eH7gJxXaZesy39J4IPUU5ZAs63JC293lNy172dJq4
+key_version = 2026.1
+expires = 2027-02-26T00:00:00Z
+
+[license_signing]
+# HMAC-SHA3-256 key for license validation
+private_key = fcfc8548f089e4c2d9ff4994aae59eff39aa7e99f78443c49688cceed5b346be
+public_key_derived = 7a3f9e2d8c1b5a4e6f0d7c8b9a2e3f1
+algorithm = HS384
+
+[recovery]
+code = D_zkwnnPW8QrnwvpwBLZPOlEwQSMxSrq
+backup_location = SECURE_OFFLINE
+escrow = false
+
+[encryption]
+# Source code encryption settings
+cipher = AES-256-GCM
+key_derivation = Argon2id
+ciphertext_format = version:nonce:ciphertext:tag
+iterations = 3
+memory_kb = 65536
+parallelism = 4
+
+[watermarking]
+enabled = true
+method = steganographic+static
+customer_id_length = 16
+integrity_check = sha3-256
+
+[distribution]
+package_format = encrypted_tar
+checksum_algorithm = sha3-256
+signature_required = true
+tamper_detection = true
+
+[audit]
+access_logging = true
+log_retention_days = 365
+alert_on_unauthorized = true
+siem_integration = enabled

@@ -1,0 +1,188 @@
+# Alertmanager Configuration for AMCIS
+# ======================================
+# Routes alerts to appropriate channels based on severity and team
+
+global:
+  # SMTP configuration for email notifications
+  smtp_smarthost: 'smtp.example.com:587'
+  smtp_from: 'alerts@amcis.io'
+  smtp_auth_username: 'alerts@amcis.io'
+  smtp_auth_password: '${SMTP_PASSWORD}'
+  
+  # Slack API configuration
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
+  
+  # PagerDuty integration
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+  
+  # Resolve timeout
+  resolve_timeout: 5m
+
+# Templates for notification formatting
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Inhibition rules - prevent duplicate alerting
+inhibit_rules:
+  # If a critical alert is firing, don't send warnings for the same instance
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']
+
+# Routing tree
+route:
+  # Default receiver
+  receiver: 'default'
+  
+  # Group alerts by these labels
+  group_by: ['alertname', 'severity', 'team']
+  
+  # Wait before sending notification for a group
+  group_wait: 30s
+  
+  # Interval between notifications for the same group
+  group_interval: 5m
+  
+  # Minimum interval between notifications for an alert
+  repeat_interval: 4h
+  
+  # Child routes
+  routes:
+    # Critical alerts -> PagerDuty immediately
+    - match:
+        severity: critical
+      receiver: 'pagerduty-critical'
+      group_wait: 0s
+      continue: true
+    
+    # Security alerts -> Security team
+    - match:
+        team: security
+      receiver: 'security-team'
+      group_wait: 1m
+      group_interval: 5m
+      repeat_interval: 1h
+      continue: true
+    
+    # Database alerts -> DBA team
+    - match:
+        team: database
+      receiver: 'dba-team'
+      group_wait: 2m
+      continue: true
+    
+    # Platform alerts -> Platform team
+    - match:
+        team: platform
+      receiver: 'platform-team'
+      group_wait: 2m
+      continue: true
+    
+    # AI/ML alerts -> AI team
+    - match:
+        team: ai
+      receiver: 'ai-team'
+      group_wait: 2m
+      continue: true
+    
+    # Warning level -> Slack only
+    - match:
+        severity: warning
+      receiver: 'slack-warnings'
+      continue: false
+
+# Receivers define notification channels
+receivers:
+  # Default receiver (email to ops team)
+  - name: 'default'
+    email_configs:
+      - to: 'ops@amcis.io'
+        subject: '[AMCIS Alert] {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Severity: {{ .Labels.severity }}
+          Instance: {{ .Labels.instance }}
+          Description: {{ .Annotations.description }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+
+  # PagerDuty for critical alerts
+  - name: 'pagerduty-critical'
+    pagerduty_configs:
+      - service_key: '${PAGERDUTY_SERVICE_KEY}'
+        description: '{{ .GroupLabels.alertname }}'
+        severity: critical
+        details:
+          summary: '{{ .CommonAnnotations.summary }}'
+          description: '{{ .CommonAnnotations.description }}'
+          instance: '{{ .CommonLabels.instance }}'
+
+  # Security team notifications
+  - name: 'security-team'
+    slack_configs:
+      - channel: '#security-alerts'
+        title: '🔒 Security Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *{{ .Annotations.summary }}*
+          Severity: {{ .Labels.severity }}
+          Instance: {{ .Labels.instance }}
+          {{ .Annotations.description }}
+          {{ end }}
+        color: '{{ if eq .GroupLabels.severity "critical" }}danger{{ else }}warning{{ end }}'
+        
+    email_configs:
+      - to: 'security@amcis.io'
+        subject: '[SECURITY ALERT] {{ .GroupLabels.alertname }}'
+
+  # DBA team notifications
+  - name: 'dba-team'
+    slack_configs:
+      - channel: '#database-alerts'
+        title: '🗄️ Database Alert: {{ .GroupLabels.alertname }}'
+        text: '{{ template "slack.default.text" . }}'
+        color: warning
+        
+    email_configs:
+      - to: 'dba@amcis.io'
+        subject: '[DB ALERT] {{ .GroupLabels.alertname }}'
+
+  # Platform team notifications
+  - name: 'platform-team'
+    slack_configs:
+      - channel: '#platform-alerts'
+        title: '⚙️ Platform Alert: {{ .GroupLabels.alertname }}'
+        text: '{{ template "slack.default.text" . }}'
+        color: warning
+        
+    email_configs:
+      - to: 'platform@amcis.io'
+        subject: '[PLATFORM ALERT] {{ .GroupLabels.alertname }}'
+
+  # AI team notifications
+  - name: 'ai-team'
+    slack_configs:
+      - channel: '#ai-alerts'
+        title: '🤖 AI Alert: {{ .GroupLabels.alertname }}'
+        text: '{{ template "slack.default.text" . }}'
+        color: warning
+        
+    email_configs:
+      - to: 'ai-team@amcis.io'
+        subject: '[AI ALERT] {{ .GroupLabels.alertname }}'
+
+  # Slack warnings channel
+  - name: 'slack-warnings'
+    slack_configs:
+      - channel: '#alerts-warnings'
+        title: '⚠️ Warning: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          {{ .Annotations.summary }}
+          Instance: {{ .Labels.instance }}
+          {{ end }}
+        color: '#808080'  # Gray for warnings
+        send_resolved: true

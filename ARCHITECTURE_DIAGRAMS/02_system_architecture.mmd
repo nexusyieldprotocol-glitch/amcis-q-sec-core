@@ -1,0 +1,66 @@
+
+```mermaid
+graph TB
+    subgraph "User Layer"
+        CLI[CLI Interface]
+        API[REST API]
+        DASH[Dashboard]
+    end
+    
+    subgraph "Core Layer"
+        KERNEL[AMCIS Kernel]
+        TRUST[Trust Engine]
+        POLICY[Policy Engine]
+    end
+    
+    subgraph "Security Modules"
+        CRYPTO[Crypto Module]
+        EDR[EDR/XDR]
+        NET[Network Security]
+        AI[AI Security]
+        COMP[Compliance]
+        THREAT[Threat Intel]
+        SECRETS[Secrets Mgr]
+        FORENSICS[Forensics]
+        SOAR[SOAR]
+        SC[Supply Chain]
+    end
+    
+    subgraph "Data Layer"
+        DB[(PostgreSQL)]
+        CACHE[(Redis)]
+        VAULT[(HashiCorp Vault)]
+        LOG[(Audit Logs)]
+    end
+    
+    CLI --> KERNEL
+    API --> KERNEL
+    DASH --> KERNEL
+    
+    KERNEL --> TRUST
+    KERNEL --> POLICY
+    
+    KERNEL --> CRYPTO
+    KERNEL --> EDR
+    KERNEL --> NET
+    KERNEL --> AI
+    KERNEL --> COMP
+    KERNEL --> THREAT
+    KERNEL --> SECRETS
+    KERNEL --> FORENSICS
+    KERNEL --> SOAR
+    KERNEL --> SC
+    
+    CRYPTO --> VAULT
+    EDR --> DB
+    NET --> DB
+    AI --> DB
+    COMP --> DB
+    THREAT --> CACHE
+    SECRETS --> VAULT
+    FORENSICS --> DB
+    SOAR --> DB
+    SC --> DB
+    
+    KERNEL --> LOG
+```

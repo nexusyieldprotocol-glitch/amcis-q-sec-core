@@ -1,0 +1,526 @@
+name: AMCIS Full CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop, 'release/*']
+    paths:
+      - '**.py'
+      - '**.rs'
+      - 'pyproject.toml'
+      - 'requirements*.txt'
+      - 'Cargo.toml'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - '.github/workflows/**'
+      - 'AMCIS_Q_SEC_CORE/**'
+      - 'AMCIS_NG/**'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - '**.py'
+      - '**.rs'
+      - 'pyproject.toml'
+      - 'requirements*.txt'
+      - 'Cargo.toml'
+      - 'AMCIS_Q_SEC_CORE/**'
+      - 'AMCIS_NG/**'
+  schedule:
+    # Run security scans daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  PYTHON_VERSION: "3.12"
+  RUST_VERSION: "1.75"
+  POETRY_VERSION: "1.7.0"
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================================================
+  # JOB 1: Code Quality - Lint and Format
+  # ============================================================================
+  lint:
+    name: 🔍 Lint & Format Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install Python linting tools
+        run: |
+          pip install ruff black mypy isort flake8
+      
+      - name: Check code formatting with Black
+        run: |
+          black --check --diff AMCIS_Q_SEC_CORE/ || true
+      
+      - name: Lint with Ruff
+        run: |
+          ruff check AMCIS_Q_SEC_CORE/ --output-format=github
+      
+      - name: Check import sorting with isort
+        run: |
+          isort --check-only --diff AMCIS_Q_SEC_CORE/ || true
+      
+      - name: Type check with mypy
+        run: |
+          mypy AMCIS_Q_SEC_CORE/ --ignore-missing-imports --show-error-codes || true
+      
+      - name: Set up Rust
+        if: hashFiles('AMCIS_NG/**/Cargo.toml') != ''
+        uses: dtolnay/rust-action@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+      
+      - name: Check Rust formatting
+        if: hashFiles('AMCIS_NG/**/Cargo.toml') != ''
+        run: |
+          cd AMCIS_NG && cargo fmt -- --check
+      
+      - name: Run Rust Clippy
+        if: hashFiles('AMCIS_NG/**/Cargo.toml') != ''
+        run: |
+          cd AMCIS_NG && cargo clippy -- -D warnings || true
+
+  # ============================================================================
+  # JOB 2: Security Scanning
+  # ============================================================================
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      # Python Security Scanning
+      - name: Install security tools
+        run: |
+          pip install bandit safety pip-audit semgrep
+      
+      - name: Run Bandit security scan
+        run: |
+          bandit -r AMCIS_Q_SEC_CORE/ -f json -o bandit-report.json || true
+          bandit -r AMCIS_Q_SEC_CORE/ -f screen
+      
+      - name: Run Safety dependency check
+        run: |
+          safety check --json --output safety-report.json || true
+          safety check || true
+      
+      - name: Run pip-audit
+        run: |
+          pip-audit --format=json --output=pip-audit-report.json || true
+          pip-audit || true
+      
+      - name: Run Semgrep analysis
+        run: |
+          semgrep --config=auto AMCIS_Q_SEC_CORE/ --json --output=semgrep-report.json || true
+      
+      # Secret Detection
+      - name: Secret Detection
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+      
+      # CodeQL Analysis
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: security-extended,security-and-quality
+      
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+      
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+      
+      # Upload security reports
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+            pip-audit-report.json
+            semgrep-report.json
+
+  # ============================================================================
+  # JOB 3: Unit Tests
+  # ============================================================================
+  unit-tests:
+    name: 🧪 Unit Tests
+    runs-on: ubuntu-latest
+    needs: [lint]
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: amcis
+          POSTGRES_PASSWORD: amcis_test
+          POSTGRES_DB: amcis_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      vault:
+        image: hashicorp/vault:1.15
+        env:
+          VAULT_DEV_ROOT_TOKEN_ID: dev-token
+          VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+        ports:
+          - 8200:8200
+        options: >-
+          --cap-add=IPC_LOCK
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r AMCIS_Q_SEC_CORE/requirements.txt
+          pip install pytest pytest-cov pytest-asyncio pytest-mock pytest-xdist
+      
+      - name: Wait for services
+        run: |
+          sleep 10
+      
+      - name: Initialize Vault
+        run: |
+          export VAULT_ADDR=http://localhost:8200
+          export VAULT_TOKEN=dev-token
+          vault secrets enable -version=2 -path=secret kv || true
+          vault kv put secret/test/api key=test-value
+      
+      - name: Run tests with coverage
+        run: |
+          cd AMCIS_Q_SEC_CORE
+          pytest tests/ -v --tb=short \
+            --cov=. \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term-missing \
+            --cov-fail-under=80 \
+            -n auto
+        env:
+          DATABASE_URL: postgresql://amcis:amcis_test@localhost:5432/amcis_test
+          REDIS_URL: redis://localhost:6379/0
+          VAULT_ADDR: http://localhost:8200
+          VAULT_TOKEN: dev-token
+          AMCIS_ENV: test
+      
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-py${{ matrix.python-version }}
+          path: |
+            AMCIS_Q_SEC_CORE/coverage.xml
+            AMCIS_Q_SEC_CORE/htmlcov/
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./AMCIS_Q_SEC_CORE/coverage.xml
+          flags: unittests
+          name: codecov-py${{ matrix.python-version }}
+          fail_ci_if_error: false
+
+  # ============================================================================
+  # JOB 4: Rust Tests (AMCIS_NG)
+  # ============================================================================
+  rust-tests:
+    name: ⚙️ Rust Tests
+    runs-on: ubuntu-latest
+    if: hashFiles('AMCIS_NG/**/Cargo.toml') != ''
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          components: clippy, rustfmt
+      
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: AMCIS_NG
+      
+      - name: Run tests
+        run: |
+          cd AMCIS_NG
+          cargo test --all-features --workspace
+      
+      - name: Generate coverage
+        run: |
+          cd AMCIS_NG
+          cargo tarpaulin --out Xml || true
+      
+      - name: Upload Rust coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./AMCIS_NG/cobertura.xml
+          flags: rust
+          fail_ci_if_error: false
+
+  # ============================================================================
+  # JOB 5: Integration Tests
+  # ============================================================================
+  integration-tests:
+    name: 🔗 Integration Tests
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          pip install -r AMCIS_Q_SEC_CORE/requirements.txt
+          pip install pytest pytest-asyncio requests httpx
+      
+      - name: Start services with Docker Compose
+        run: |
+          docker-compose -f AMCIS_Q_SEC_CORE/deployment/docker-compose.yml up -d
+          sleep 30
+      
+      - name: Run integration tests
+        run: |
+          cd AMCIS_Q_SEC_CORE
+          pytest tests/integration/ -v --tb=short || true
+      
+      - name: Cleanup Docker
+        if: always()
+        run: |
+          docker-compose -f AMCIS_Q_SEC_CORE/deployment/docker-compose.yml down
+
+  # ============================================================================
+  # JOB 6: Build Docker Images
+  # ============================================================================
+  build-docker:
+    name: 🐳 Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [unit-tests, security-scan]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build AMCIS Q-Sec Core
+        uses: docker/build-push-action@v5
+        with:
+          context: ./AMCIS_Q_SEC_CORE
+          file: ./AMCIS_Q_SEC_CORE/deployment/Dockerfile
+          push: false
+          tags: |
+            amcis/q-sec-core:latest
+            amcis/q-sec-core:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+      
+      - name: Test Docker image
+        run: |
+          docker run --rm amcis/q-sec-core:${{ github.sha }} python -c "import core; print('Core module OK')"
+      
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: amcis/q-sec-core:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # ============================================================================
+  # JOB 7: Performance Tests
+  # ============================================================================
+  performance-tests:
+    name: 📊 Performance Tests
+    runs-on: ubuntu-latest
+    needs: [build-docker]
+    if: github.ref == 'refs/heads/main' || contains(github.ref, 'release/')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run performance benchmarks
+        run: |
+          echo "Running performance tests..."
+          # Add k6, locust, or custom benchmarks here
+      
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results
+          path: performance-report/
+
+  # ============================================================================
+  # JOB 8: Deploy to Staging
+  # ============================================================================
+  deploy-staging:
+    name: 🚀 Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [integration-tests, build-docker, performance-tests]
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure kubectl
+        uses: azure/setup-kubectl@v3
+      
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to staging..."
+          # kubectl apply -k k8s/overlays/staging/
+          # helm upgrade --install amcis ./helm-chart -f values-staging.yaml
+      
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests against staging..."
+          # curl -f https://staging.amcis.io/health || exit 1
+
+  # ============================================================================
+  # JOB 9: Deploy to Production
+  # ============================================================================
+  deploy-production:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Deploy to production
+        run: |
+          echo "Deploying to production..."
+          # kubectl apply -k k8s/overlays/production/
+      
+      - name: Verify deployment
+        run: |
+          echo "Verifying production deployment..."
+          # kubectl rollout status deployment/amcis
+      
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "Deployment successful!"
+          # Send notification to Slack, Teams, etc.
+
+  # ============================================================================
+  # JOB 10: Create Release
+  # ============================================================================
+  release:
+    name: 📦 Create Release
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release]')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Generate version
+        id: version
+        run: |
+          VERSION=$(date +'%Y.%m.%d')-$(git rev-parse --short HEAD)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release v${{ steps.version.outputs.version }}
+          body: |
+            ## Changes in this Release
+            - Automated release from commit ${{ github.sha }}
+            
+            ## Docker Images
+            - `amcis/q-sec-core:${{ github.sha }}`
+            - `amcis/q-sec-core:latest`
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

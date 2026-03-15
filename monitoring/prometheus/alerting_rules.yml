@@ -1,0 +1,331 @@
+# AMCIS Alerting Rules
+# ====================
+# Prometheus alerting rules for AMCIS Security Platform
+
+groups:
+  # ============================================================================
+  # System Health Alerts
+  # ============================================================================
+  - name: system_health
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 80% (current value: {{ $value }}%)"
+
+      - alert: CriticalCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 2m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Critical CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 95% (current value: {{ $value }}%)"
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 85% (current value: {{ $value }}%)"
+
+      - alert: CriticalMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Critical memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 95% (current value: {{ $value }}%)"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Disk space is below 15% (current value: {{ $value }}%)"
+
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 5
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Critical disk space on {{ $labels.instance }}"
+          description: "Disk space is below 5% (current value: {{ $value }}%)"
+
+  # ============================================================================
+  # AMCIS Application Alerts
+  # ============================================================================
+  - name: amcis_application
+    rules:
+      - alert: AMCISCoreDown
+        expr: up{job="amcis-core"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+          service: amcis-core
+        annotations:
+          summary: "AMCIS Core is down"
+          description: "AMCIS Core instance {{ $labels.instance }} has been down for more than 1 minute"
+
+      - alert: AMCISHighErrorRate
+        expr: rate(amcis_http_requests_total{status=~"5.."}[5m]) / rate(amcis_http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "High error rate in AMCIS"
+          description: "Error rate is above 5% (current value: {{ $value }}%)"
+
+      - alert: AMCISCriticalErrorRate
+        expr: rate(amcis_http_requests_total{status=~"5.."}[5m]) / rate(amcis_http_requests_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Critical error rate in AMCIS"
+          description: "Error rate is above 10% (current value: {{ $value }}%)"
+
+      - alert: AMCISHighLatency
+        expr: histogram_quantile(0.95, rate(amcis_http_request_duration_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "High latency in AMCIS"
+          description: "95th percentile latency is above 500ms (current value: {{ $value }}s)"
+
+      - alert: AMCISAPIDown
+        expr: up{job="amcis-api-gateway"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "AMCIS API Gateway is down"
+          description: "API Gateway has been down for more than 1 minute"
+
+  # ============================================================================
+  # Security Alerts
+  # ============================================================================
+  - name: security_alerts
+    rules:
+      - alert: HighThreatDetectionRate
+        expr: rate(amcis_threats_detected_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: critical
+          team: security
+          type: threat_detection
+        annotations:
+          summary: "High threat detection rate"
+          description: "More than 10 threats detected per minute (current: {{ $value }}/min)"
+
+      - alert: SecurityEventAnomaly
+        expr: abs(rate(amcis_security_events_total[5m]) - avg_over_time(rate(amcis_security_events_total[1h])[1h:5m])) > 3 * stddev_over_time(rate(amcis_security_events_total[1h])[1h:5m])
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "Security event anomaly detected"
+          description: "Unusual security event pattern detected"
+
+      - alert: FailedLoginAttempts
+        expr: rate(amcis_auth_failures_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "High rate of failed login attempts"
+          description: "More than 5 failed logins per minute (current: {{ $value }}/min)"
+
+      - alert: CertificateExpiringSoon
+        expr: (amcis_certificate_expiry_timestamp - time()) / 86400 < 30
+        for: 1h
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Certificate expiring soon"
+          description: "Certificate expires in {{ $value }} days"
+
+      - alert: CertificateExpired
+        expr: amcis_certificate_expiry_timestamp < time()
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Certificate has expired"
+          description: "Certificate has expired on {{ $labels.instance }}"
+
+  # ============================================================================
+  # Database Alerts
+  # ============================================================================
+  - name: database_alerts
+    rules:
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: database
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL instance {{ $labels.instance }} is down"
+
+      - alert: PostgreSQLHighConnections
+        expr: pg_stat_activity_count > pg_settings_max_connections * 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team: database
+        annotations:
+          summary: "PostgreSQL high connection count"
+          description: "More than 80% of connections are in use"
+
+      - alert: PostgreSQLSlowQueries
+        expr: rate(pg_stat_statements_max_time[5m]) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          team: database
+        annotations:
+          summary: "PostgreSQL slow queries detected"
+          description: "Queries taking longer than 1 second"
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: database
+        annotations:
+          summary: "Redis is down"
+          description: "Redis instance {{ $labels.instance }} is down"
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          team: database
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis memory usage is above 90%"
+
+  # ============================================================================
+  # Vault/Secrets Alerts
+  # ============================================================================
+  - name: vault_alerts
+    rules:
+      - alert: VaultDown
+        expr: vault_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Vault is down"
+          description: "Vault instance {{ $labels.instance }} is down"
+
+      - alert: VaultUnsealed
+        expr: vault_unsealed == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Vault is sealed"
+          description: "Vault is currently sealed and requires unsealing"
+
+      - alert: VaultHighTokenUsage
+        expr: rate(vault_token_creation_count[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "High Vault token creation rate"
+          description: "Unusual token creation activity detected"
+
+  # ============================================================================
+  # AI/ML Alerts
+  # ============================================================================
+  - name: ai_ml_alerts
+    rules:
+      - alert: AIEngineDown
+        expr: up{job="amcis-ai-engine"} == 0
+        for: 1m
+        labels:
+          severity: warning
+          team: ai
+        annotations:
+          summary: "AI Engine is down"
+          description: "AI Engine instance is not responding"
+
+      - alert: HighPredictionLatency
+        expr: histogram_quantile(0.95, rate(amcis_prediction_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          team: ai
+        annotations:
+          summary: "High AI prediction latency"
+          description: "95th percentile prediction time is above 2 seconds"
+
+      - alert: ModelAccuracyDrop
+        expr: amcis_model_accuracy < 0.85
+        for: 10m
+        labels:
+          severity: warning
+          team: ai
+        annotations:
+          summary: "AI model accuracy dropped"
+          description: "Model accuracy is below 85% (current: {{ $value }})"
+
+  # ============================================================================
+  # Backup Alerts
+  # ============================================================================
+  - name: backup_alerts
+    rules:
+      - alert: BackupFailed
+        expr: amcis_backup_last_success < (time() - 86400)
+        for: 1h
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Backup has not completed in 24 hours"
+          description: "Last successful backup was more than 24 hours ago"
+
+      - alert: BackupDurationHigh
+        expr: amcis_backup_duration_seconds > 7200
+        for: 1m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Backup is taking longer than expected"
+          description: "Backup duration is above 2 hours"

@@ -1,0 +1,53 @@
+
+# AMCIS Q-SEC CORE - Module Structure
+# =====================================
+
+amcis_q_sec_core/
+│
+├── core/                          [FOUNDATION LAYER]
+│   ├── amcis_kernel.py           - Central security orchestrator
+│   ├── amcis_trust_engine.py     - Trust scoring & verification
+│   └── ...
+│
+├── crypto/                        [CRYPTOGRAPHY LAYER]
+│   ├── amcis_key_manager.py      - Quantum-safe key management
+│   ├── amcis_merkle_log.py       - Immutable audit logging
+│   └── ...
+│
+├── network/                       [NETWORK SECURITY LAYER]
+│   ├── amcis_dns_tunnel_detector.py
+│   ├── amcis_microsegmentation.py
+│   └── amcis_port_surface_mapper.py
+│
+├── ai_security/                   [AI SECURITY LAYER]
+│   ├── amcis_prompt_firewall.py  - LLM injection protection
+│   ├── amcis_output_validator.py - AI output validation
+│   └── amcis_rag_provenance.py   - RAG tracking
+│
+├── compliance/                    [COMPLIANCE LAYER]
+│   ├── nist_csf.py               - NIST CSF 2.0 automation
+│   ├── compliance_engine.py
+│   └── report_generator.py
+│
+├── edr/                           [ENDPOINT SECURITY LAYER]
+│   └── Endpoint Detection & Response
+│
+├── threat_intel/                  [THREAT INTELLIGENCE LAYER]
+│   └── Threat intelligence aggregation
+│
+├── secrets_mgr/                   [SECRETS MANAGEMENT LAYER]
+│   └── Vault integration & secret rotation
+│
+├── forensics/                     [FORENSICS LAYER]
+│   └── Timeline reconstruction
+│
+├── soar/                          [AUTOMATION LAYER]
+│   └── Security orchestration
+│
+├── supply_chain/                  [SUPPLY CHAIN LAYER]
+│   ├── amcis_sbom_generator.py
+│   └── amcis_dependency_validator.py
+│
+└── tests/                         [TEST LAYER]
+    └── Comprehensive test suites
+

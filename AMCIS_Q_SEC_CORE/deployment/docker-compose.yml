@@ -1,0 +1,122 @@
+# AMCIS Q-SEC CORE - Docker Compose Configuration
+# 
+# Usage: docker-compose up -d
+
+version: '3.8'
+
+services:
+  amcis-core:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    image: amcis-q-sec-core:latest
+    container_name: amcis-security-core
+    restart: unless-stopped
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+      - seccomp:./seccomp-profile.json
+    
+    # Capabilities
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+      - NET_ADMIN  # Required for microsegmentation
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    
+    # Volumes
+    volumes:
+      # Configuration
+      - ./config:/etc/amcis:ro
+      # Persistent data
+      - amcis-data:/var/lib/amcis
+      # Logs
+      - amcis-logs:/var/log/amcis
+      # Read-only application code
+      - ../AMCIS_Q_SEC_CORE:/opt/amcis:ro
+    
+    # Environment
+    environment:
+      - AMCIS_LOG_LEVEL=INFO
+      - AMCIS_ENVIRONMENT=production
+      - AMCIS_ENABLE_TPM=false
+      - AMCIS_HSM_LIBRARY=
+      - PYTHONUNBUFFERED=1
+    
+    # Network
+    networks:
+      - amcis-network
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "from cli.amcis_main import cli; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Logging
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "5"
+        labels: "amcis.service,amcis.version"
+        env: "AMCIS_ENVIRONMENT"
+
+  # Optional: Monitoring sidecar
+  amcis-monitor:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    image: amcis-q-sec-core:latest
+    container_name: amcis-monitor
+    restart: unless-stopped
+    command: ["trust-report"]
+    
+    security_opt:
+      - no-new-privileges:true
+    
+    cap_drop:
+      - ALL
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    
+    volumes:
+      - amcis-data:/var/lib/amcis:ro
+      - amcis-logs:/var/log/amcis:ro
+    
+    networks:
+      - amcis-network
+    
+    depends_on:
+      amcis-core:
+        condition: service_healthy
+
+networks:
+  amcis-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  amcis-data:
+    driver: local
+  amcis-logs:
+    driver: local

@@ -1,0 +1,134 @@
+# AMCIS Recording Rules
+# =====================
+# Prometheus recording rules for pre-aggregated metrics
+
+groups:
+  # ============================================================================
+  # HTTP Request Aggregation
+  # ============================================================================
+  - name: http_requests
+    interval: 30s
+    rules:
+      - record: amcis:http_requests_rate5m
+        expr: rate(amcis_http_requests_total[5m])
+        
+      - record: amcis:http_requests_rate1m
+        expr: rate(amcis_http_requests_total[1m])
+        
+      - record: amcis:http_request_duration:p95
+        expr: histogram_quantile(0.95, rate(amcis_http_request_duration_seconds_bucket[5m]))
+        
+      - record: amcis:http_request_duration:p99
+        expr: histogram_quantile(0.99, rate(amcis_http_request_duration_seconds_bucket[5m]))
+        
+      - record: amcis:http_requests_by_status:rate5m
+        expr: sum by (status) (rate(amcis_http_requests_total[5m]))
+
+  # ============================================================================
+  # Security Metrics Aggregation
+  # ============================================================================
+  - name: security_metrics
+    interval: 1m
+    rules:
+      - record: amcis:threats_detected:rate5m
+        expr: rate(amcis_threats_detected_total[5m])
+        
+      - record: amcis:threats_by_severity:rate5m
+        expr: sum by (severity) (rate(amcis_threats_detected_total[5m]))
+        
+      - record: amcis:auth_failures:rate5m
+        expr: rate(amcis_auth_failures_total[5m])
+        
+      - record: amcis:auth_success:rate5m
+        expr: rate(amcis_auth_success_total[5m])
+        
+      - record: amcis:auth_failure_rate
+        expr: |
+          (
+            rate(amcis_auth_failures_total[5m])
+          /
+            (rate(amcis_auth_success_total[5m]) + rate(amcis_auth_failures_total[5m]))
+          ) * 100
+
+  # ============================================================================
+  # System Resource Aggregation
+  # ============================================================================
+  - name: system_resources
+    interval: 1m
+    rules:
+      - record: amcis:node_cpu_usage:avg5m
+        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+        
+      - record: amcis:node_memory_usage:percent
+        expr: |
+          (
+            (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)
+          /
+            node_memory_MemTotal_bytes
+          ) * 100
+          
+      - record: amcis:node_disk_usage:percent
+        expr: |
+          (
+            (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"})
+          /
+            node_filesystem_size_bytes{mountpoint="/"}
+          ) * 100
+
+  # ============================================================================
+  # Database Metrics Aggregation
+  # ============================================================================
+  - name: database_metrics
+    interval: 1m
+    rules:
+      - record: amcis:postgres_connections:percent
+        expr: (pg_stat_activity_count / pg_settings_max_connections) * 100
+        
+      - record: amcis:postgres_transactions:rate5m
+        expr: rate(pg_stat_database_xact_commit[5m]) + rate(pg_stat_database_xact_rollback[5m])
+        
+      - record: amcis:postgres_cache_hit_ratio
+        expr: |
+          (
+            pg_stat_database_blks_hit
+          /
+            (pg_stat_database_blks_hit + pg_stat_database_blks_read)
+          ) * 100
+          
+      - record: amcis:redis_memory_usage:percent
+        expr: (redis_memory_used_bytes / redis_memory_max_bytes) * 100
+
+  # ============================================================================
+  # AI/ML Metrics Aggregation
+  # ============================================================================
+  - name: ai_ml_metrics
+    interval: 1m
+    rules:
+      - record: amcis:predictions:rate5m
+        expr: rate(amcis_predictions_total[5m])
+        
+      - record: amcis:prediction_duration:p95
+        expr: histogram_quantile(0.95, rate(amcis_prediction_duration_seconds_bucket[5m]))
+        
+      - record: amcis:model_accuracy:avg1h
+        expr: avg_over_time(amcis_model_accuracy[1h])
+
+  # ============================================================================
+  # SLA/SLO Recording Rules
+  # ============================================================================
+  - name: slo_metrics
+    interval: 5m
+    rules:
+      - record: amcis:slo:availability
+        expr: avg_over_time(up{job=~"amcis.*"}[1h])
+        
+      - record: amcis:slo:latency_p95
+        expr: amcis:http_request_duration:p95
+        
+      - record: amcis:slo:error_rate
+        expr: |
+          (
+            sum(rate(amcis_http_requests_total{status=~"5.."}[5m]))
+          /
+            sum(rate(amcis_http_requests_total[5m]))
+          ) * 100

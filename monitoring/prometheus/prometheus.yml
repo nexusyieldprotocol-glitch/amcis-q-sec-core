@@ -1,0 +1,159 @@
+# Prometheus Configuration for AMCIS
+# ===================================
+# Complete monitoring configuration for AMCIS Security Platform
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'amcis-production'
+    environment: 'production'
+    replica: '{{.ExternalURL}}'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+      timeout: 10s
+      api_version: v2
+
+# Rule files
+rule_files:
+  - "alerting_rules.yml"
+  - "recording_rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    metrics_path: /metrics
+
+  # AMCIS Core Application
+  - job_name: 'amcis-core'
+    static_configs:
+      - targets: 
+          - 'amcis-core:9090'
+          - 'amcis-core-1:9090'
+          - 'amcis-core-2:9090'
+    metrics_path: /metrics
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    honor_labels: true
+
+  # AMCIS API Gateway
+  - job_name: 'amcis-api-gateway'
+    static_configs:
+      - targets: ['api-gateway:8080']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  # AMCIS EDR Agents
+  - job_name: 'amcis-edr'
+    static_configs:
+      - targets: ['edr-collector:9090']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # AMCIS AI Engine
+  - job_name: 'amcis-ai-engine'
+    static_configs:
+      - targets: ['ai-engine:9090']
+    metrics_path: /metrics
+    scrape_interval: 15s
+
+  # Node Exporter (Host Metrics)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets:
+          - 'node-exporter:9100'
+          - 'amcis-core:9100'
+          - 'amcis-worker-1:9100'
+          - 'amcis-worker-2:9100'
+    scrape_interval: 15s
+
+  # cAdvisor (Container Metrics)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 15s
+
+  # PostgreSQL Exporter
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+
+  # Redis Exporter
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+
+  # Vault Metrics
+  - job_name: 'vault'
+    static_configs:
+      - targets: ['vault:8200']
+    metrics_path: /v1/sys/metrics
+    params:
+      format: ['prometheus']
+    scrape_interval: 30s
+    bearer_token_file: /etc/prometheus/vault_token
+    tls_config:
+      insecure_skip_verify: true
+
+  # Kafka/Jaeger Tracing
+  - job_name: 'jaeger'
+    static_configs:
+      - targets: ['jaeger:16686']
+    metrics_path: /metrics
+    scrape_interval: 30s
+
+  # Blackbox Exporter (Endpoint Monitoring)
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://api.amcis.io/health
+          - https://dashboard.amcis.io
+          - https://docs.amcis.io
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Kubernetes API (if running in k8s)
+  - job_name: 'kubernetes-pods'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - amcis
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name

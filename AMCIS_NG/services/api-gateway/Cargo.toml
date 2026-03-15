@@ -1,0 +1,21 @@
+[package]
+name = "amcis-api-gateway"
+version = "1.0.0-alpha"
+edition = "2021"
+
+[dependencies]
+axum = "0.7"
+tokio = { version = "1.35", features = ["full"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+base64 = "0.22"
+
+# Internal
+amcis-crypto-pqc = { path = "../../crates/crypto-pqc" }
+
+[dev-dependencies]
+reqwest = { version = "0.11", features = ["json"] }

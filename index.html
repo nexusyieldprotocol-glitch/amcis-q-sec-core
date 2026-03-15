@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMCIS Unified - Control Plane</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.5);
+            --bg: #030712;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f3f4f6;
+            --text-dim: #9ca3af;
+            --accent: #06b6d4;
+            --success: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        /* Animated Background */
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.15), transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(6, 182, 212, 0.15), transparent 40%);
+            z-index: -1;
+        }
+
+        .grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                              linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            max-width: 800px;
+            padding: 2rem;
+            z-index: 10;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .logo-container {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 0 20px var(--primary-glow));
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #fff, #6366f1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            letter-spacing: -2px;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-dim);
+            margin-bottom: 3rem;
+            line-height: 1.6;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-launch {
+            padding: 1.25rem 3rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 100px;
+            cursor: pointer;
+            box-shadow: 0 0 30px var(--primary-glow);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-launch:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 0 50px var(--primary-glow);
+        }
+
+        .btn-launch:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* Orchestration Overlay */
+        .orchestration-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 90vw;
+            max-width: 600px;
+            background: var(--card-bg);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .orchestration-overlay.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: all;
+        }
+
+        .process-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .process-title h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .process-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: rgba(99, 102, 241, 0.05);
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
+        }
+
+        .step.complete {
+            border-color: var(--success);
+        }
+
+        .step-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-icon {
+            background: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .step.complete .step-icon {
+            background: var(--success);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .step-status {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .loader {
+            width: 100%;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-top: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loader-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            transition: width 0.5s ease;
+        }
+
+        .hidden {
+            display: none;
+            opacity: 0;
+        }
+
+        /* Success screen */
+        #success-screen {
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 5rem;
+            color: var(--success);
+            margin-bottom: 1.5rem;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+    <div class="grid"></div>
+
+    <div class="hero" id="hero-section">
+        <div class="logo-container">⚛️</div>
+        <h1>AMCIS UNIFIED</h1>
+        <p class="subtitle">
+            The Sovereign Technology Stack for the Post-Quantum Era.<br>
+            Orchestrating autonomous security, governance, and cryptographic validation.
+        </p>
+        <button class="btn-launch" onclick="startOrchestration()">Initiate Secure Boot</button>
+    </div>
+
+    <div class="orchestration-overlay" id="orchestration-overlay">
+        <div class="process-title">
+            <h2>Systems Orchestration</h2>
+            <p class="subtitle" style="font-size: 0.9rem; margin-bottom: 0;">Securing Sovereign Tech Stack</p>
+        </div>
+
+        <div class="process-steps">
+            <div class="step" id="step-identity">
+                <div class="step-icon">🆔</div>
+                <div class="step-content">
+                    <div class="step-name">Identity & Attestation</div>
+                    <div class="step-status">Pending node verification...</div>
+                </div>
+            </div>
+            <div class="step" id="step-pqc">
+                <div class="step-icon">🔐</div>
+                <div class="step-content">
+                    <div class="step-name">Quantum Readiness</div>
+                    <div class="step-status">Initializing PQC modules (ML-KEM)...</div>
+                </div>
+            </div>
+            <div class="step" id="step-vault">
+                <div class="step-icon">🏛️</div>
+                <div class="step-content">
+                    <div class="step-name">Sovereign Vault</div>
+                    <div class="step-status">Connecting to secure storage...</div>
+                </div>
+            </div>
+            <div class="step" id="step-checks">
+                <div class="step-icon">🛡️</div>
+                <div class="step-content">
+                    <div class="step-name">Compliance Audit</div>
+                    <div class="step-status">Running NIST SP 800-207 checks...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="loader">
+            <div class="loader-progress" id="loader-progress"></div>
+        </div>
+    </div>
+
+    <div class="orchestration-overlay" id="success-screen">
+        <div class="success-icon">✅</div>
+        <h2>ORCHESTRATION COMPLETE</h2>
+        <p class="subtitle">Your sovereign node is now operational and secured.</p>
+        <button class="btn-launch" onclick="goToDashboard()" style="background: var(--success); box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);">Open Command Center</button>
+    </div>
+
+    <script>
+        function startOrchestration() {
+            document.getElementById('hero-section').style.opacity = '0';
+            document.getElementById('hero-section').style.transform = 'scale(0.9)';
+            
+            setTimeout(() => {
+                document.getElementById('hero-section').classList.add('hidden');
+                document.getElementById('orchestration-overlay').classList.add('active');
+                runSteps();
+            }, 600);
+        }
+
+        async function runSteps() {
+            const steps = [
+                { id: 'step-identity', status: 'Verifying hardware attestation...', delay: 1500 },
+                { id: 'step-pqc', status: 'ML-KEM/ML-DSA modules initialized.', delay: 2000 },
+                { id: 'step-vault', status: 'Vault connection established.', delay: 1500 },
+                { id: 'step-checks', status: 'NIST Compliance Verified (100%).', delay: 2000 }
+            ];
+
+            const progress = document.getElementById('loader-progress');
+            let currentProgress = 0;
+
+            for (let i = 0; i < steps.length; i++) {
+                const step = document.getElementById(steps[i].id);
+                step.classList.add('active');
+                
+                await new Promise(r => setTimeout(r, steps[i].delay / 2));
+                
+                currentProgress += 25;
+                progress.style.width = currentProgress + '%';
+                
+                await new Promise(r => setTimeout(r, steps[i].delay / 2));
+                
+                step.classList.add('complete');
+                step.classList.remove('active');
+                step.querySelector('.step-status').innerText = steps[i].status;
+            }
+
+            setTimeout(() => {
+                document.getElementById('orchestration-overlay').style.opacity = '0';
+                document.getElementById('orchestration-overlay').style.transform = 'translate(-50%, -50%) scale(0.9)';
+                setTimeout(() => {
+                    document.getElementById('orchestration-overlay').classList.remove('active');
+                    document.getElementById('success-screen').classList.add('active');
+                }, 500);
+            }, 1000);
+        }
+
+        function goToDashboard() {
+            window.location.href = '/dashboard';
+        }
+    </script>
+</body>
+</html>

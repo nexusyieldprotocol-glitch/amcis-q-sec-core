@@ -1,0 +1,26 @@
+# Render.com Blueprint for AMCIS Demo
+# Deploy instantly to render.com
+
+services:
+  - type: web
+    name: amcis-demo
+    runtime: docker
+    plan: standard
+    branch: main
+    dockerContext: .
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: AMCIS_DEMO_MODE
+        value: "true"
+      - key: AMCIS_LOG_LEVEL
+        value: "info"
+      - key: DEMO_SESSION_TIMEOUT
+        value: "24h"
+      - key: ADMIN_USERNAME
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        generateValue: true
+      - key: API_KEY
+        generateValue: true
+    healthCheckPath: /health
+    autoDeploy: true

@@ -1,0 +1,212 @@
+# AMCIS Pre-commit Configuration
+# ================================
+# Install: pre-commit install
+# Update: pre-commit autoupdate
+# Run all: pre-commit run --all-files
+
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      # Trailing whitespace
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      
+      # End of file fixer
+      - id: end-of-file-fixer
+      
+      # Check YAML syntax
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      
+      # Check JSON syntax
+      - id: check-json
+      
+      # Check for merge conflict markers
+      - id: check-merge-conflict
+      
+      # Check for debug statements
+      - id: debug-statements
+        language_version: python3.11
+      
+      # Check for private keys
+      - id: detect-private-key
+      
+      # Prevent committing to main/master
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, master]
+      
+      # Check file name case conflicts
+      - id: check-case-conflict
+      
+      # Check for broken symlinks
+      - id: check-symlinks
+      
+      # Check executable shebangs
+      - id: check-executables-have-shebangs
+      
+      # Check for common secrets/credentials
+      - id: detect-aws-credentials
+        args: [--allow-missing-credentials]
+
+  # Python code formatting - Black
+  - repo: https://github.com/psf/black
+    rev: 24.1.0
+    hooks:
+      - id: black
+        language_version: python3.11
+        args: [--line-length=100]
+        files: ^AMCIS_Q_SEC_CORE/.*\.py$
+
+  # Python import sorting - isort
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: [--profile=black, --line-length=100]
+        files: ^AMCIS_Q_SEC_CORE/.*\.py$
+
+  # Python linting - Ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.14
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        files: ^AMCIS_Q_SEC_CORE/.*\.py$
+
+  # Python type checking - mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - types-requests
+          - types-redis
+          - types-pyyaml
+        args: [--ignore-missing-imports]
+        files: ^AMCIS_Q_SEC_CORE/.*\.py$
+        exclude: ^AMCIS_Q_SEC_CORE/tests/
+
+  # Security scanning - Bandit
+  - repo: https://github.com/pycqa/bandit
+    rev: 1.7.7
+    hooks:
+      - id: bandit
+        args: [-c, pyproject.toml, -q, -l]
+        additional_dependencies: ["bandit[toml]"]
+        files: ^AMCIS_Q_SEC_CORE/src/.*\.py$
+
+  # Dockerfile linting
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        args: [--ignore, DL3008, --ignore, DL3013]
+
+  # Shell script checking
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+        args: [-e, SC1091]
+
+  # Terraform formatting and validation
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.86.0
+    hooks:
+      - id: terraform_fmt
+      - id: terraform_validate
+        args: [--tf-init-args=-upgrade]
+      - id: terraform_tflint
+        args: [--args=--recursive]
+
+  # YAML linting
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.33.0
+    hooks:
+      - id: yamllint
+        args: [-c, .yamllint.yaml]
+        files: \.(yaml|yml)$
+
+  # Markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.38.0
+    hooks:
+      - id: markdownlint
+        args: [--config, .markdownlint.json]
+        files: \.md$
+
+  # SQL linting
+  - repo: https://github.com/sqlfluff/sqlfluff
+    rev: 2.3.5
+    hooks:
+      - id: sqlfluff-lint
+        additional_dependencies: [dbt-postgres]
+        files: \.(sql|sql\.j2)$
+
+  # Git commit message checking
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.13.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
+  # Local hooks for custom checks
+  - repo: local
+    hooks:
+      # Check for AMCIS watermarks in new files
+      - id: amcis-watermark-check
+        name: AMCIS Watermark Check
+        entry: python scripts/check_watermark.py
+        language: python
+        pass_filenames: true
+        files: \.py$
+        stages: [commit]
+
+      # Run security scan on changed files
+      - id: security-scan
+        name: Security Scan
+        entry: python scripts/security_scan.py
+        language: python
+        pass_filenames: true
+        files: \.py$
+        stages: [commit]
+
+      # Validate OpenAPI spec
+      - id: openapi-validate
+        name: OpenAPI Validation
+        entry: python -c "import yaml; yaml.safe_load(open('AMCIS_Q_SEC_CORE/docs/api/openapi.yaml'))"
+        language: python
+        additional_dependencies: [pyyaml]
+        files: openapi\.yaml$
+        pass_filenames: false
+
+# Pre-commit configuration
+default_language_version:
+  python: python3.11
+
+default_stages: [pre-commit, pre-push]
+
+# Fail fast on first error
+fail_fast: false
+
+# Exclusions for generated files
+exclude: |
+  (?x)^(
+    AMCIS_Q_SEC_CORE/\.pytest_cache/|
+    AMCIS_Q_SEC_CORE/\.mypy_cache/|
+    AMCIS_Q_SEC_CORE/__pycache__/|
+    AMCIS_Q_SEC_CORE/\.venv/|
+    AMCIS_Q_SEC_CORE/htmlcov/|
+    AMCIS_Q_SEC_CORE/build/|
+    AMCIS_Q_SEC_CORE/dist/|
+    AMCIS_Q_SEC_CORE/\.git/|
+    .*\.egg-info/|
+    AMCIS_Q_SEC_CORE/docs/_build/|
+    \.tox/|
+    node_modules/|
+    vendor/|
+    \.min\.(js|css)$|
+    \.map$
+  )

@@ -1,0 +1,49 @@
+# Grafana Data Sources Configuration
+# ===================================
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
+    jsonData:
+      timeInterval: "5s"
+      httpMethod: POST
+      manageAlerts: true
+      prometheusType: Prometheus
+      prometheusVersion: "2.48.0"
+      cacheLevel: 'High'
+      incrementalQuerying: true
+
+  - name: PostgreSQL
+    type: postgres
+    url: postgres:5432
+    database: amcis
+    user: amcis
+    secureJsonData:
+      password: 'amcis'
+    jsonData:
+      sslmode: 'disable'
+      maxOpenConns: 10
+      maxIdleConns: 10
+      maxIdleConnsAuto: true
+      connMaxLifetime: 14400
+      postgresVersion: 1500
+      timescaledb: false
+    editable: false
+
+  - name: Redis
+    type: redis-datasource
+    url: redis:6379
+    editable: false
+    jsonData:
+      client: standalone
+      pooling:
+        enable: true
+        maxIdle: 10
+        idleTimeout: 300
+      timeout: 10

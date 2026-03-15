@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>com.amcis.SecurityPlatform</id>
+    <metadata_license>FSFAP</metadata_license>
+    <project_license>Commercial</project_license>
+    <name>AMCIS Security Platform</name>
+    <summary>Autonomous Multidimensional Cyber Intelligence System</summary>
+    
+    <description>
+        <p>
+            AMCIS is a next-generation cybersecurity platform designed for government agencies
+            and enterprises requiring quantum-resistant security and automated compliance.
+        </p>
+        <p>Key Features:</p>
+        <ul>
+            <li>Post-quantum cryptography (CRYSTALS-Kyber, CRYSTALS-Dilithium)</li>
+            <li>AI-powered threat detection and response</li>
+            <li>Federal compliance automation (NIST CSF, FedRAMP, CMMC)</li>
+            <li>Zero-trust network architecture</li>
+            <li>Security orchestration and automated response (SOAR)</li>
+            <li>Supply chain security with SBOM generation</li>
+        </ul>
+    </description>
+    
+    <launchable type="desktop-id">com.amcis.SecurityPlatform.desktop</launchable>
+    
+    <screenshots>
+        <screenshot type="default">
+            <caption>AMCIS Security Dashboard</caption>
+        </screenshot>
+    </screenshots>
+    
+    <url type="homepage">https://amcis.io</url>
+    <url type="bugtracker">https://support.amcis.io</url>
+    <url type="help">https://docs.amcis.io</url>
+    
+    <provides>
+        <binary>amcis</binary>
+        <binary>amcis-dashboard</binary>
+    </provides>
+    
+    <releases>
+        <release version="1.0.0" date="2026-03-14">
+            <description>
+                <p>Initial release of AMCIS Security Platform</p>
+            </description>
+        </release>
+    </releases>
+    
+    <content_rating type="oars-1.1" />
+</component>

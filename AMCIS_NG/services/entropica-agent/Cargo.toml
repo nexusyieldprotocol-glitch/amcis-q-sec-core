@@ -1,0 +1,27 @@
+[package]
+name = "amcis-entropica-agent"
+version = "3.0.0"
+edition = "2021"
+authors = ["AMCIS AI Division"]
+description = "Entropic Warfare Agent Swarm - Zero Explanation Protocol"
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.6", features = ["v4", "serde"] }
+tracing = "0.1"
+anyhow = "1.0"
+thiserror = "1.0"
+async-trait = "0.1"
+dashmap = "5.5"
+parking_lot = "0.12"
+rand = { version = "0.8", features = ["std_rng"] }
+sha3 = "0.10"
+reqwest = { version = "0.11", features = ["json"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+panic = "abort"

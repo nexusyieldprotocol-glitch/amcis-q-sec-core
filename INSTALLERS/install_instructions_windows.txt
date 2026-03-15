@@ -1,0 +1,62 @@
+AMCIS Security Platform - Windows Installation Instructions
+===========================================================
+
+SYSTEM REQUIREMENTS
+-------------------
+- Windows 10 (64-bit) or Windows 11
+- 8 GB RAM minimum (16 GB recommended)
+- 10 GB free disk space
+- Internet connection for threat intelligence updates
+
+INSTALLATION
+------------
+1. Extract AMCIS-Security-Platform-Windows.zip to your desired location
+
+2. Run the installer:
+   - Double-click AMCIS-Security-Platform.exe
+   - Or run from command line: AMCIS-Security-Platform.exe
+
+3. First-time setup:
+   - Copy .env.example to .env
+   - Edit .env with your configuration
+   - Run: AMCIS-Security-Platform.exe --init
+
+CONFIGURATION
+-------------
+Edit the .env file to configure:
+- Database connection (PostgreSQL)
+- Redis cache settings
+- Encryption keys and certificates
+- API endpoints
+- Logging levels
+
+RUNNING AMCIS
+-------------
+Start the main service:
+  AMCIS-Security-Platform.exe --start
+
+Start with dashboard:
+  AMCIS-Security-Platform.exe --dashboard
+
+CLI mode:
+  AMCIS-Security-Platform.exe --cli
+
+WINDOWS SERVICE
+---------------
+To install as a Windows service:
+  AMCIS-Security-Platform.exe --install-service
+
+To remove the service:
+  AMCIS-Security-Platform.exe --uninstall-service
+
+TROUBLESHOOTING
+---------------
+- Check logs in logs/ directory
+- Ensure Windows Defender excludes AMCIS directory
+- Run as Administrator for full functionality
+- Check firewall rules for AMCIS processes
+
+SUPPORT
+-------
+Email: support@amcis.io
+Documentation: https://docs.amcis.io

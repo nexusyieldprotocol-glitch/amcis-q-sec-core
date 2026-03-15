@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOUL CIRCUIT | Biomedical Engineering & Pacemaker Technology Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0a0a0f; color: #e2e8f0; }
+        .gradient-text {
+            background: linear-gradient(135deg, #00d4ff 0%, #8b5cf6 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .glass-panel {
+            background: rgba(20, 20, 30, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glow-cyan { box-shadow: 0 0 30px rgba(0, 212, 255, 0.2); }
+        .glow-purple { box-shadow: 0 0 30px rgba(139, 92, 246, 0.2); }
+        .glow-pink { box-shadow: 0 0 30px rgba(236, 72, 153, 0.2); }
+        .spec-table th, .spec-table td {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+        }
+        .spec-table th {
+            background: rgba(0, 212, 255, 0.1);
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 212, 255, 0.3); border-radius: 4px; }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Header -->
+    <header class="glass-panel fixed top-0 left-0 right-0 z-50 border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 via-purple-500 to-pink-500 flex items-center justify-center glow-cyan">
+                    <i class="fas fa-heart-pulse text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold gradient-text">SOUL CIRCUIT</h1>
+                    <p class="text-xs text-gray-400 mono tracking-wider">BIOMEDICAL ENGINEERING HUB</p>
+                </div>
+            </div>
+            <nav class="hidden lg:flex items-center gap-8">
+                <a href="#domains" class="text-sm text-gray-400 hover:text-cyan-400 transition-colors">Domains</a>
+                <a href="#pacemaker" class="text-sm text-gray-400 hover:text-cyan-400 transition-colors">Pacemaker</a>
+                <a href="#specs" class="text-sm text-gray-400 hover:text-cyan-400 transition-colors">Specifications</a>
+                <a href="#downloads" class="text-sm text-gray-400 hover:text-cyan-400 transition-colors">Downloads</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="pt-28 pb-12 px-6 max-w-7xl mx-auto">
+        <!-- Hero Section -->
+        <section class="text-center mb-16">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/30 mb-6">
+                <div class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+                <span class="text-sm text-cyan-400">VVI/R Single-Chamber Pacemaker Prototype v1.0</span>
+            </div>
+            <h2 class="text-5xl md:text-6xl font-bold mb-6">
+                <span class="gradient-text">Next-Generation</span><br>
+                Cardiac Rhythm Management
+            </h2>
+            <p class="text-xl text-gray-400 max-w-3xl mx-auto mb-8">
+                AI-powered auto-threshold management • 12+ year battery life • MRI-conditional • Bluetooth LE connectivity
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#specs" class="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-semibold hover:shadow-lg hover:shadow-cyan-500/30 transition-all">
+                    View Specifications
+                </a>
+                <a href="https://www.kimi.com/share/19c877a9-6342-84e5-8000-0000b95982c0" target="_blank" class="px-8 py-3 rounded-xl glass-panel border border-white/20 text-white font-semibold hover:bg-white/10 transition-all">
+                    <i class="fas fa-external-link-alt mr-2"></i>Original Kimi Link
+                </a>
+            </div>
+        </section>
+
+        <!-- Key Stats -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+            <div class="glass-panel rounded-xl p-6 text-center glow-cyan">
+                <div class="text-3xl font-bold text-cyan-400 mb-1">12+</div>
+                <div class="text-sm text-gray-400">Year Battery Life</div>
+            </div>
+            <div class="glass-panel rounded-xl p-6 text-center glow-purple">
+                <div class="text-3xl font-bold text-purple-400 mb-1">45×45×8</div>
+                <div class="text-sm text-gray-400">mm Dimensions</div>
+            </div>
+            <div class="glass-panel rounded-xl p-6 text-center glow-pink">
+                <div class="text-3xl font-bold text-pink-400 mb-1">&lt;30g</div>
+                <div class="text-sm text-gray-400">Weight</div>
+            </div>
+            <div class="glass-panel rounded-xl p-6 text-center glow-cyan">
+                <div class="text-3xl font-bold text-cyan-400 mb-1">1.5T/3T</div>
+                <div class="text-sm text-gray-400">MRI Compatible</div>
+            </div>
+        </section>
+
+        <!-- Domain Portfolio -->
+        <section id="domains" class="mb-16">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h3 class="text-2xl font-bold mb-2">Domain Portfolio</h3>
+                    <p class="text-gray-400">930+ registered domains for SOUL CIRCUIT biomedical ecosystem</p>
+                </div>
+                <span class="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-400 text-sm border border-cyan-500/30">930 Domains</span>
+            </div>
+            
+            <div class="glass-panel rounded-xl p-6 mb-6">
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <button onclick="filterDomains('all')" class="domain-filter px-4 py-2 rounded-lg bg-cyan-500/20 text-cyan-400 text-sm border border-cyan-500/30 hover:bg-cyan-500/30 transition-all active">All</button>
+                    <button onclick="filterDomains('soul')" class="domain-filter px-4 py-2 rounded-lg bg-white/5 text-gray-400 text-sm border border-white/10 hover:bg-white/10 transition-all">Soul</button>
+                    <button onclick="filterDomains('circuit')" class="domain-filter px-4 py-2 rounded-lg bg-white/5 text-gray-400 text-sm border border-white/10 hover:bg-white/10 transition-all">Circuit</button>
+                    <button onclick="filterDomains('soulcircuit')" class="domain-filter px-4 py-2 rounded-lg bg-white/5 text-gray-400 text-sm border border-white/10 hover:bg-white/10 transition-all">SoulCircuit</button>
+                    <button onclick="filterDomains('biomedical')" class="domain-filter px-4 py-2 rounded-lg bg-white/5 text-gray-400 text-sm border border-white/10 hover:bg-white/10 transition-all">Biomedical</button>
+                    <button onclick="filterDomains('biocircuit')" class="domain-filter px-4 py-2 rounded-lg bg-white/5 text-gray-400 text-sm border border-white/10 hover:bg-white/10 transition-all">BioCircuit</button>
+                </div>
+                
+                <div id="domain-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 max-h-96 overflow-y-auto">
+                    <!-- Domain items will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Pacemaker Specification -->
+        <section id="pacemaker" class="mb-16">
+            <h3 class="text-2xl font-bold mb-6">KIMI Pacemaker v1.0 Design Specification</h3>
+            
+            <!-- Quick Specs -->
+            <div class="glass-panel rounded-xl p-6 mb-6 glow-purple">
+                <h4 class="text-lg font-semibold mb-4 text-purple-400">Target Specifications Summary</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <div class="flex justify-between py-2 border-b border-white/5">
+                            <span class="text-gray-400">Pacing Mode</span>
+                            <span class="font-mono text-cyan-400">VVI/R (Ventricular demand, Rate-responsive)</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-white/5">
+                            <span class="text-gray-400">Lower Rate Limit</span>
+                            <span class="font-mono text-cyan-400">30-100 BPM (programmable)</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-white/5">
+                            <span class="text-gray-400">Upper Rate Limit</span>
+                            <span class="font-mono text-cyan-400">100-180 BPM (programmable)</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-white/5">
+                            <span class="text-gray-400">Pacing Amplitude</span>
+                            <span class="font-mono text-cyan-400">0-8V (0.25V steps)</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-white/5">
+                            <span class="text-gray-400">Pulse Width</span>
+                            <span class="font-mono text-cyan-400">0.1-1.5ms (0.1ms steps)</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between py-2 border-b border-white/5">
+                            <span class="text-gray-400">Sensitivity</span>
+                            <span class="font-mono text-cyan-400">0.5-20mV (programmable)</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-white/5">
+                            <span class="text-gray-400">Lead Impedance</span>
+                            <span class="font-mono text-cyan-400">200-1500 Ω</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-white/5">
+                            <span class="text-gray-400">Battery</span>
+                            <span class="font-mono text-cyan-400">Lithium-Iodine (Li/I₂) 1.2Ah</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-white/5">
+                            <span class="text-gray-400">Communication</span>
+                            <span class="font-mono text-cyan-400">MICS (402-405MHz) + BLE</span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-white/5">
+                            <span class="text-gray-400">MRI Compatibility</span>
+                            <span class="font-mono text-cyan-400">Conditional 1.5T and 3T</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subsystems -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="glass-panel rounded-xl p-6">
+                    <h4 class="text-lg font-semibold mb-4 text-cyan-400"><i class="fas fa-microchip mr-2"></i>Electrical Subsystems</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-green-400 mt-0.5"></i>
+                            <div>
+                                <span class="font-semibold">Hermetic Encapsulation:</span>
+                                <span class="text-gray-400">Titanium Grade 1 case with laser-welded seam, Glass-to-metal feedthrough</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-green-400 mt-0.5"></i>
+                            <div>
+                                <span class="font-semibold">Power Management:</span>
+                                <span class="text-gray-400">Li/I₂ battery (2.8V), DC-DC converters, Charge pump (0-8V)</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-green-400 mt-0.5"></i>
+                            <div>
+                                <span class="font-semibold">Sensing Front End:</span>
+                                <span class="text-gray-400">Instrumentation amplifier (60dB gain), 0.5-50Hz bandpass, 12-bit ADC</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-green-400 mt-0.5"></i>
+                            <div>
+                                <span class="font-semibold">Main Processor:</span>
+                                <span class="text-gray-400">ARM Cortex-M0+ (48MHz), 256KB Flash, 32KB RAM, 64KB FRAM</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-green-400 mt-0.5"></i>
+                            <div>
+                                <span class="font-semibold">Pacing Output:</span>
+                                <span class="text-gray-400">H-bridge biphasic output, Programmable amplitude/pulse width</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="glass-panel rounded-xl p-6">
+                    <h4 class="text-lg font-semibold mb-4 text-purple-400"><i class="fas fa-cogs mr-2"></i>Software Architecture</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-layer-group text-purple-400 mt-0.5"></i>
+                            <div>
+                                <span class="font-semibold">Application Layer:</span>
+                                <span class="text-gray-400">Mode Controller (VVI/R), Rate Response, Capture Management</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-brain text-purple-400 mt-0.5"></i>
+                            <div>
+                                <span class="font-semibold">AI/ML Layer:</span>
+                                <span class="text-gray-400">Auto-Threshold Learning, Arrhythmia Detection, Pattern Recognition</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-shield-alt text-purple-400 mt-0.5"></i>
+                            <div>
+                                <span class="font-semibold">Safety Features:</span>
+                                <span class="text-gray-400">Watchdog Timer, Power-On Reset, Noise Reversion, Safety Pacing</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-wifi text-purple-400 mt-0.5"></i>
+                            <div>
+                                <span class="font-semibold">Communication:</span>
+                                <span class="text-gray-400">MICS Band + Bluetooth LE, AES-256 encryption</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Power Budget -->
+            <div class="glass-panel rounded-xl p-6 mb-6">
+                <h4 class="text-lg font-semibold mb-4 text-pink-400"><i class="fas fa-battery-full mr-2"></i>Power Consumption Budget</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm spec-table">
+                        <thead>
+                            <tr>
+                                <th class="text-left">Subsystem</th>
+                                <th class="text-right">Active</th>
+                                <th class="text-right">Sleep</th>
+                                <th class="text-right">Duty Cycle</th>
+                                <th class="text-right">Average</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-300">
+                            <tr>
+                                <td>Microcontroller</td>
+                                <td class="text-right mono">100 µA</td>
+                                <td class="text-right mono">0.1 µA</td>
+                                <td class="text-right mono">1%</td>
+                                <td class="text-right mono text-cyan-400">1.1 µA</td>
+                            </tr>
+                            <tr>
+                                <td>Sensing AFE</td>
+                                <td class="text-right mono">5 µA</td>
+                                <td class="text-right mono">0.5 µA</td>
+                                <td class="text-right mono">100%</td>
+                                <td class="text-right mono text-cyan-400">5.0 µA</td>
+                            </tr>
+                            <tr>
+                                <td>Pacing Output</td>
+                                <td class="text-right mono">5000 µA</td>
+                                <td class="text-right mono">0 µA</td>
+                                <td class="text-right mono">0.1%</td>
+                                <td class="text-right mono text-cyan-400">5.0 µA</td>
+                            </tr>
+                            <tr>
+                                <td>Telemetry (MICS)</td>
+                                <td class="text-right mono">5000 µA</td>
+                                <td class="text-right mono">0 µA</td>
+                                <td class="text-right mono">0.01%</td>
+                                <td class="text-right mono text-cyan-400">0.5 µA</td>
+                            </tr>
+                            <tr>
+                                <td>Telemetry (BLE)</td>
+                                <td class="text-right mono">3000 µA</td>
+                                <td class="text-right mono">0 µA</td>
+                                <td class="text-right mono">0.1%</td>
+                                <td class="text-right mono text-cyan-400">3.0 µA</td>
+                            </tr>
+                            <tr class="border-t-2 border-cyan-500/30">
+                                <td colspan="4" class="text-right font-bold">TOTAL</td>
+                                <td class="text-right mono text-cyan-400 font-bold">~15 µA</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-sm text-gray-400 mt-4">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Battery Life: 1.2Ah / 15µA = <span class="text-cyan-400 font-semibold">~12.5 years</span>
+                </p>
+            </div>
+
+            <!-- Compliance -->
+            <div class="glass-panel rounded-xl p-6">
+                <h4 class="text-lg font-semibold mb-4 text-green-400"><i class="fas fa-certificate mr-2"></i>Standards Compliance</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <h5 class="font-semibold mb-2 text-gray-300">Electrical Safety</h5>
+                        <ul class="space-y-1 text-gray-400">
+                            <li>• IEC 60601-1 (General Requirements)</li>
+                            <li>• IEC 60601-2-31 (Cardiac Pacemakers)</li>
+                            <li>• IEC 60601-1-2 (EMC)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h5 class="font-semibold mb-2 text-gray-300">Active Implantable Devices</h5>
+                        <ul class="space-y-1 text-gray-400">
+                            <li>• ISO 14708-2 (Cardiac Pacemakers)</li>
+                            <li>• ISO 14708-1 (General Requirements)</li>
+                            <li>• ISO 10993 (Biocompatibility)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h5 class="font-semibold mb-2 text-gray-300">Software & Quality</h5>
+                        <ul class="space-y-1 text-gray-400">
+                            <li>• IEC 62304 (Medical Device Software)</li>
+                            <li>• IEC 61508 (Functional Safety)</li>
+                            <li>• ISO 14971 (Risk Management)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h5 class="font-semibold mb-2 text-gray-300">Regulatory</h5>
+                        <ul class="space-y-1 text-gray-400">
+                            <li>• FDA 21 CFR Part 820 (QSR)</li>
+                            <li>• ISO 13485 (Quality Management)</li>
+                            <li>• ASTM F2503 (MRI Safety)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Downloads -->
+        <section id="downloads" class="mb-16">
+            <h3 class="text-2xl font-bold mb-6">Project Files & Downloads</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="glass-panel rounded-xl p-6 hover:border-cyan-500/50 transition-all">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                            <i class="fas fa-file-alt text-cyan-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Design Specification</h4>
+                            <p class="text-xs text-gray-400">Complete technical document</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-4">591 lines • 45.4 KB</p>
+                    <a href="data:text/plain;charset=utf-8,${encodeURIComponent(document.querySelector('pre').innerText)}" download="KIMI_Pacemaker_v1.0_Specification.txt" class="block w-full py-2 rounded-lg bg-cyan-500/20 text-cyan-400 text-center text-sm border border-cyan-500/30 hover:bg-cyan-500/30 transition-all">
+                        <i class="fas fa-download mr-2"></i>Download TXT
+                    </a>
+                </div>
+
+                <div class="glass-panel rounded-xl p-6 hover:border-purple-500/50 transition-all">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                            <i class="fas fa-image text-purple-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">System Architecture</h4>
+                            <p class="text-xs text-gray-400">Block diagram PNG</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-4">344.87 KB • PNG</p>
+                    <button class="w-full py-2 rounded-lg bg-purple-500/20 text-purple-400 text-sm border border-purple-500/30 hover:bg-purple-500/30 transition-all">
+                        <i class="fas fa-eye mr-2"></i>View Image
+                    </button>
+                </div>
+
+                <div class="glass-panel rounded-xl p-6 hover:border-pink-500/50 transition-all">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-lg bg-pink-500/20 flex items-center justify-center">
+                            <i class="fas fa-zipper text-pink-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold">Complete Prototype</h4>
+                            <p class="text-xs text-gray-400">All design files</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-400 mb-4">1,445.65 KB • ZIP</p>
+                    <button class="w-full py-2 rounded-lg bg-pink-500/20 text-pink-400 text-sm border border-pink-500/30 hover:bg-pink-500/30 transition-all">
+                        <i class="fas fa-download mr-2"></i>Download ZIP
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- External Links -->
+        <section class="glass-panel rounded-xl p-6">
+            <h3 class="text-xl font-bold mb-4">External Resources</h3>
+            <div class="space-y-3">
+                <a href="https://www.kimi.com/share/19c877a9-6342-84e5-8000-0000b95982c0" target="_blank" class="flex items-center justify-between p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-all">
+                    <div class="flex items-center gap-4">
+                        <i class="fas fa-external-link-alt text-cyan-400"></i>
+                        <div>
+                            <div class="font-semibold">Soul Circuit Custom Knowledge</div>
+                            <div class="text-sm text-gray-400">Kimi.com Share Link 1</div>
+                        </div>
+                    </div>
+                    <i class="fas fa-arrow-right text-gray-500"></i>
+                </a>
+                <a href="https://www.kimi.com/share/19c9954f-be02-84c8-8000-0000b4913ac1" target="_blank" class="flex items-center justify-between p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-all">
+                    <div class="flex items-center gap-4">
+                        <i class="fas fa-external-link-alt text-cyan-400"></i>
+                        <div>
+                            <div class="font-semibold">Soul Circuit Project</div>
+                            <div class="text-sm text-gray-400">Kimi.com Share Link 2</div>
+                        </div>
+                    </div>
+                    <i class="fas fa-arrow-right text-gray-500"></i>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 py-8">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p class="text-gray-500 text-sm">
+                SOUL CIRCUIT Biomedical Engineering Hub • VVI/R Pacemaker Prototype v1.0 • 2026
+            </p>
+            <p class="text-gray-600 text-xs mt-2">
+                Class III Medical Device • FDA 510(k) Pathway • ISO 13485 Compliant
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Domain data from the CSV
+        const domains = [
+            // Soul domains
+            { name: "soul.ai", status: "aftermarket", type: "soul", price: "" },
+            { name: "soul.app", status: "aftermarket", type: "soul", price: "" },
+            { name: "soul.cloud", status: "aftermarket", type: "soul", price: "" },
+            { name: "soul.dev", status: "aftermarket", type: "soul", price: "" },
+            { name: "soul.io", status: "aftermarket", type: "soul", price: "" },
+            { name: "soul.tech", status: "aftermarket", type: "soul", price: "" },
+            { name: "soul.doctor", status: "aftermarket", type: "soul", price: "" },
+            // Circuit domains
+            { name: "circuit.ai", status: "aftermarket", type: "circuit", price: "" },
+            { name: "circuit.app", status: "aftermarket", type: "circuit", price: "" },
+            { name: "circuit.cloud", status: "aftermarket", type: "circuit", price: "" },
+            { name: "circuit.dev", status: "aftermarket", type: "circuit", price: "" },
+            { name: "circuit.io", status: "aftermarket", type: "circuit", price: "" },
+            { name: "circuit.tech", status: "aftermarket", type: "circuit", price: "" },
+            // SoulCircuit domains
+            { name: "soulcircuit.app", status: "available", type: "soulcircuit", price: "$12.98" },
+            { name: "soulcircuit.cloud", status: "available", type: "soulcircuit", price: "$3.98" },
+            { name: "soulcircuit.dev", status: "available", type: "soulcircuit", price: "$12.98" },
+            { name: "soulcircuit.io", status: "available", type: "soulcircuit", price: "$34.98" },
+            { name: "soulcircuit.tech", status: "available", type: "soulcircuit", price: "$9.99" },
+            { name: "soulcircuit.health", status: "available", type: "soulcircuit", price: "" },
+            { name: "soulcircuit.medical", status: "available", type: "soulcircuit", price: "" },
+            // Biomedical domains
+            { name: "biomedical.ai", status: "available", type: "biomedical", price: "$79.98" },
+            { name: "biomedical.app", status: "available", type: "biomedical", price: "$12.98" },
+            { name: "biomedical.cloud", status: "available", type: "biomedical", price: "$3.98" },
+            { name: "biomedical.dev", status: "available", type: "biomedical", price: "$12.98" },
+            { name: "biomedical.io", status: "available", type: "biomedical", price: "$34.98" },
+            { name: "biomedical.tech", status: "available", type: "biomedical", price: "$9.99" },
+            { name: "biomedical.doctor", status: "available", type: "biomedical", price: "$5.98" },
+            // BioCircuit domains
+            { name: "biocircuit.ai", status: "available", type: "biocircuit", price: "$79.98" },
+            { name: "biocircuit.app", status: "available", type: "biocircuit", price: "$12.98" },
+            { name: "biocircuit.cloud", status: "available", type: "biocircuit", price: "$3.98" },
+            { name: "biocircuit.dev", status: "available", type: "biocircuit", price: "$12.98" },
+            { name: "biocircuit.io", status: "available", type: "biocircuit", price: "$34.98" },
+            { name: "biocircuit.tech", status: "available", type: "biocircuit", price: "$9.99" },
+            { name: "biocircuit.medical", status: "available", type: "biocircuit", price: "" },
+            { name: "biocircuit.health", status: "available", type: "biocircuit", price: "" },
+            // CircuitBio domains
+            { name: "circuitbio.ai", status: "available", type: "biocircuit", price: "$79.98" },
+            { name: "circuitbio.app", status: "available", type: "biocircuit", price: "$12.98" },
+            { name: "circuitbio.cloud", status: "available", type: "biocircuit", price: "$3.98" },
+            { name: "circuitbio.dev", status: "available", type: "biocircuit", price: "$12.98" },
+            { name: "circuitbio.io", status: "available", type: "biocircuit", price: "$34.98" },
+            { name: "circuitbio.tech", status: "available", type: "biocircuit", price: "$9.99" },
+        ];
+
+        function renderDomains(filter = 'all') {
+            const grid = document.getElementById('domain-grid');
+            const filtered = filter === 'all' ? domains : domains.filter(d => d.type === filter);
+            
+            grid.innerHTML = filtered.map(domain => `
+                <div class="p-3 rounded-lg bg-white/5 border border-white/10 hover:border-cyan-500/50 transition-all">
+                    <div class="font-mono text-sm text-cyan-400 mb-1">${domain.name}</div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs ${domain.status === 'available' ? 'text-green-400' : 'text-yellow-400'}">
+                            ${domain.status}
+                        </span>
+                        ${domain.price ? `<span class="text-xs text-gray-500">${domain.price}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterDomains(type) {
+            // Update active button
+            document.querySelectorAll('.domain-filter').forEach(btn => {
+                btn.classList.remove('active', 'bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/30');
+                btn.classList.add('bg-white/5', 'text-gray-400', 'border-white/10');
+            });
+            event.target.classList.remove('bg-white/5', 'text-gray-400', 'border-white/10');
+            event.target.classList.add('bg-cyan-500/20', 'text-cyan-400', 'border-cyan-500/30');
+            
+            renderDomains(type);
+        }
+
+        // Initial render
+        renderDomains();
+    </script>
+</body>
+</html>

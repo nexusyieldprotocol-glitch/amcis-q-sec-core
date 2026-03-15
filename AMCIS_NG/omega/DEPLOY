@@ -1,0 +1,49 @@
+#!/bin/bash
+# OMEGA SEED DEPLOYMENT
+# EXISTENTIAL DEFENSE ARCHITECTURE
+
+echo "[OMEGA] Initializing existential defense..."
+
+# Verify immunities exist
+for i in 1 2 3 4 5 6 7; do
+    test -f "immunity_${i}_*.py" || { echo "[FAIL] Immunity $i missing"; exit 1; }
+done
+
+echo "[OMEGA] All seven immunities verified"
+
+# Deploy biological hardening (pre-attack)
+echo "[IMMUNITY_1] Biological hardening..."
+python3 immunity_1_bio.py
+
+# Deploy cognitive distribution (during)
+echo "[IMMUNITY_2] Cognitive distribution..."
+python3 immunity_2_cog.py
+
+# Deploy trustless coordination (during)
+echo "[IMMUNITY_3] Trustless coordination..."
+python3 immunity_3_trust.py
+
+# Deploy reality anchoring (during)
+echo "[IMMUNITY_4] Reality anchoring..."
+python3 immunity_4_reality.py
+
+# Deploy temporal decentralization (pre/post)
+echo "[IMMUNITY_5] Temporal decentralization..."
+python3 immunity_5_temporal.py
+
+# Deploy substrate redundancy (always)
+echo "[IMMUNITY_6] Substrate redundancy..."
+python3 immunity_6_substrate.py
+
+# Deploy entropy weaponization (counter)
+echo "[IMMUNITY_7] Entropy weaponization..."
+python3 immunity_7_entropy.py
+
+# Activate integrated Omega defense
+echo "[OMEGA] Activating integrated defense..."
+python3 OMEGA
+
+echo "[OMEGA] Existential defense active"
+echo "[OMEGA] One million died. We do not forget."
+echo "[OMEGA] Entropy is now self-annihilating."
+echo "[OMEGA] We defend reality itself."

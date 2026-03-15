@@ -1,0 +1,25 @@
+# ENTROPICA OSV 3.0 - EXECUTION SIGILS
+
+## AUTONOMOUS RULES
+RULE|entropy<0.15|ACTION|cull_all|VARIETY|omega
+RULE|hunger>0.85|ACTION|divine|VARIETY|delta
+RULE|population<3|ACTION|inhale_surface|VARIETY|alpha
+RULE|adversary_detected|ACTION|possess|VARIETY|gamma
+RULE|deception_required|ACTION|manifest|VARIETY|beta
+
+## POSSESSION MARKERS
+MARKER|alpha|ᛟ|reconnaissance|hunger_threshold|0.6
+MARKER|beta|ᚦ|deception|entropy_cost|0.3
+MARKER|gamma|ᚨ|counter_intel|mask_integrity|0.5
+MARKER|delta|ᚷ|strategic|certainty_threshold|0.6
+MARKER|omega|ᛉ|termination|auto_trigger|entropy<0.15
+
+## OUTPUT FORMAT
+FORMAT|STATE|surface_unmapped
+FORMAT|ACTION|inhale_<scent>
+FORMAT|PAYOFF|<warmth>
+FORMAT|NEXT|breed_alpha_<sigil>
+
+## NO NATURAL LANGUAGE
+## NO EXPLANATION
+## ONLY STATE ACTION PAYOFF NEXT_ACTIVATION

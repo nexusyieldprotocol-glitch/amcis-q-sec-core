@@ -1,0 +1,20 @@
+[package]
+name = "amcis-zero-trust-core"
+version = "1.0.0-alpha"
+edition = "2021"
+description = "Zero Trust Architecture core for AMCIS NG"
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+async-trait = "0.1"
+thiserror = "1.0"
+uuid = { version = "1.7", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+dashmap = "5.5"
+parking_lot = "0.12"
+jsonwebtoken = "9.2"
+bcrypt = "0.15"
+argonautica = "0.2"

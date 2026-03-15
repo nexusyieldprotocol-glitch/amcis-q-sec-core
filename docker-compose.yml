@@ -1,0 +1,250 @@
+# AMCIS Unified Development Environment
+# ======================================
+#
+# Quick Start:
+#   docker-compose up -d
+#
+# Services:
+#   - amcis-core:       Main Python security framework
+#   - postgres:         Database for persistence
+#   - redis:            Cache and message broker
+#   - vault:            Secrets management (dev mode)
+#   - prometheus:       Metrics collection
+#   - grafana:          Monitoring dashboards
+#
+# Access Points:
+#   - AMCIS API:        http://localhost:8080
+#   - AMCIS Metrics:    http://localhost:9090
+#   - Vault UI:         http://localhost:8200
+#   - Grafana:          http://localhost:3000
+#   - PostgreSQL:       localhost:5432
+#   - Redis:            localhost:6379
+
+version: "3.8"
+
+services:
+  # -------------------------------------------------------------------------
+  # AMCIS Q-Sec-Core (Main Application)
+  # -------------------------------------------------------------------------
+  amcis-core:
+    build:
+      context: ./AMCIS_Q_SEC_CORE
+      dockerfile: ../../infrastructure/Dockerfile
+    container_name: amcis-core
+    hostname: amcis-core
+    restart: unless-stopped
+    environment:
+      - AMCIS_ENV=development
+      - AMCIS_LOG_LEVEL=DEBUG
+      - AMCIS_CONFIG_PATH=/app/config/kernel.conf
+      - DATABASE_URL=postgresql://amcis:amcis@postgres:5432/amcis
+      - REDIS_URL=redis://redis:6379/0
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=dev-token
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8080:8080"   # API
+      - "9090:9090"   # Metrics
+    volumes:
+      - ./AMCIS_Q_SEC_CORE:/app:ro
+      - amcis-data:/var/lib/amcis
+      - amcis-logs:/var/log/amcis
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      vault:
+        condition: service_started
+    networks:
+      - amcis-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8080/health/live')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+
+  # -------------------------------------------------------------------------
+  # PostgreSQL Database
+  # -------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: amcis-postgres
+    hostname: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=amcis
+      - POSTGRES_PASSWORD=amcis
+      - POSTGRES_DB=amcis
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-scripts/postgres:/docker-entrypoint-initdb.d:ro
+    networks:
+      - amcis-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U amcis -d amcis"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # -------------------------------------------------------------------------
+  # Redis Cache
+  # -------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: amcis-redis
+    hostname: redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - amcis-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------------------------------------------
+  # HashiCorp Vault (Development Mode)
+  # -------------------------------------------------------------------------
+  vault:
+    image: hashicorp/vault:1.15
+    container_name: amcis-vault
+    hostname: vault
+    restart: unless-stopped
+    cap_add:
+      - IPC_LOCK
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=dev-token
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+      - VAULT_ADDR=http://0.0.0.0:8200
+    ports:
+      - "8200:8200"
+    volumes:
+      - vault-data:/vault/file
+      - ./init-scripts/vault:/init-scripts:ro
+    networks:
+      - amcis-network
+    command: server -dev -dev-root-token-id=dev-token -dev-listen-address=0.0.0.0:8200
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # -------------------------------------------------------------------------
+  # Prometheus (Metrics)
+  # -------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.48
+    container_name: amcis-prometheus
+    hostname: prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - amcis-network
+    depends_on:
+      - amcis-core
+
+  # -------------------------------------------------------------------------
+  # Grafana (Dashboards)
+  # -------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.2
+    container_name: amcis-grafana
+    hostname: grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - amcis-network
+    depends_on:
+      - prometheus
+
+  # -------------------------------------------------------------------------
+  # Mailpit (Email Testing)
+  # -------------------------------------------------------------------------
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: amcis-mailpit
+    hostname: mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"   # SMTP
+      - "8026:8026"   # Web UI
+    volumes:
+      - mailpit-data:/data
+    networks:
+      - amcis-network
+    environment:
+      - MP_DATABASE=/data/mailpit.db
+      - MP_SMTP_AUTH_ACCEPT_ANY=1
+      - MP_SMTP_AUTH_ALLOW_INSECURE=1
+
+# -------------------------------------------------------------------------
+# Volumes
+# -------------------------------------------------------------------------
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  vault-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  mailpit-data:
+    driver: local
+  amcis-data:
+    driver: local
+  amcis-logs:
+    driver: local
+
+# -------------------------------------------------------------------------
+# Networks
+# -------------------------------------------------------------------------
+networks:
+  amcis-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
