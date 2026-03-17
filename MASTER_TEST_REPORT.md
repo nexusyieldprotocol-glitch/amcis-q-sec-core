@@ -185,17 +185,41 @@ For further information visit https://errors.pydantic.dev/2.12/u/removed-kwargs 
 
 ## ERRORS & FIXES NEEDED
 
-### Failed Tests
+### Failed Tests (FIXED IN COMMIT b7f263f)
 
-- **Syntax: AMCIS_Q_SEC_CORE\crypto\amcis_encrypt.py**: Syntax error at line 1: invalid non-printable character U+FEFF
-- **Syntax: AMCIS_Q_SEC_CORE\dashboard\security_monitor.py**: Syntax error at line 1: invalid non-printable character U+FEFF
-- **Syntax: AMCIS_Q_SEC_CORE\dashboard\tui_dashboard.py**: Syntax error at line 89: invalid syntax
-- **Import: AGENT_FINANCE.agents.arbitrage_agent**: Import error: No module named 'core.base_agent'
-- **Import: AGENT_FINANCE.agents.market_maker_agent**: Import error: No module named 'core.base_agent'
-- **Import: AGENT_FINANCE.api.trading_api**: Error: `regex` is removed. use `pattern` instead
+- ✅ **Syntax: AMCIS_Q_SEC_CORE\crypto\amcis_encrypt.py**: BOM character removed
+- ✅ **Syntax: AMCIS_Q_SEC_CORE\dashboard\security_monitor.py**: BOM character removed  
+- ✅ **Syntax: AMCIS_Q_SEC_CORE\dashboard\tui_dashboard.py**: Syntax error fixed
+- ✅ **Import: AGENT_FINANCE.agents.arbitrage_agent**: Import path fixed
+- ✅ **Import: AGENT_FINANCE.agents.market_maker_agent**: Import path fixed
+- ✅ **Import: AGENT_FINANCE.api.trading_api**: Pydantic regex→pattern fixed
+- ⏭️ **Dep: ccxt**: Optional dependency (install when needed)
 
-For further information visit https://errors.pydantic.dev/2.12/u/removed-kwargs
-- **Dep: ccxt**: Crypto exchange trading - NOT installed (pip install ccxt)
+---
+
+## ⚠️ CRITICAL DISCLAIMERS
+
+**This is a THEORETICAL FRAMEWORK - NOT a proven trading system.**
+
+### No Verified Returns
+- **NO BACKTEST DATA PROVIDED**: You must implement your own backtesting
+- **NO LIVE TRACK RECORD**: No verified trading history included
+- **NO PERFORMANCE GUARANTEES**: All returns are hypothetical
+
+### Risk Warning
+- **HIGH RISK**: Cryptocurrency trading can result in total loss of capital
+- **TECHNICAL LIMITATIONS**: Arbitrage requires millisecond latency most retail traders don't have
+- **COMPETITIVE DISADVANTAGE**: Institutional players have superior technology
+- **COSTS NOT VALIDATED**: Actual transaction costs may exceed profit margins
+
+### What You Must Do
+1. **Backtest 12+ months** of historical data before live trading
+2. **Paper trade for 30+ days** to verify in current market conditions
+3. **Account for all costs**: fees, slippage, network latency, funding costs
+4. **Implement your own risk management** beyond what's provided
+5. **Consult a financial advisor** before deploying capital
+
+**You are solely responsible for any trading losses.**
 
 ---
 
@@ -203,7 +227,7 @@ For further information visit https://errors.pydantic.dev/2.12/u/removed-kwargs
 
 ```
 AMCIS_UNIFIED/
-├── AGENT_FINANCE/              # Financial AI Agent System (REVENUE ENGINE)
+├── AGENT_FINANCE/              # Financial AI Agent Framework (EXPERIMENTAL)
 │   ├── agents/
 │   │   ├── arbitrage_agent.py       # Cross-exchange arbitrage
 │   │   ├── market_maker_agent.py    # Market making bot
@@ -246,25 +270,48 @@ AMCIS_UNIFIED/
 
 ## RECOMMENDED ACTIONS
 
-1. **Install Missing Dependencies:**
-   ```bash
-   pip install -r AGENT_FINANCE/requirements.txt
-   ```
+### 1. Development Setup
+```bash
+pip install -r AGENT_FINANCE/requirements.txt
+```
 
-2. **Start Infrastructure:**
-   ```bash
-   cd AGENT_FINANCE
-   docker-compose up -d
-   ```
+### 2. Start Infrastructure
+```bash
+cd AGENT_FINANCE
+docker-compose up -d
+```
 
-3. **Run API Server:**
-   ```bash
-   python api/trading_api.py
-   ```
+### 3. Implement Backtesting (REQUIRED)
+```python
+# You MUST implement your own backtest:
+# - Download 12+ months historical data
+# - Account for fees (0.1% taker typical)
+# - Account for slippage (0.01-0.1%)
+# - Include network latency
+# - Test across all market conditions
+```
 
-4. **Access Dashboard:**
-   - API: http://localhost:8080
-   - Health: http://localhost:8080/health
+### 4. Paper Trade (REQUIRED)
+```bash
+# Use testnet/paper trading for minimum 30 days
+# Verify strategies work before risking capital
+```
+
+### 5. Calculate True Costs
+```python
+# Example cost structure (VERIFY THESE):
+taker_fee = 0.001        # 0.1% per trade
+slippage = 0.0005        # 0.05% estimated
+network_latency = 0.001  # 0.1% opportunity cost
+
+# Arbitrage requires >0.34% spread just to break even
+# Most retail traders see spreads <0.1%
+```
+
+### 6. Only Then Consider Live Trading
+- Start with minimum viable capital
+- Use only money you can afford to lose
+- Accept that you may lose 100% of deployed capital
 
 ---
 
