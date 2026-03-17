@@ -11,7 +11,7 @@ from decimal import Decimal
 from datetime import datetime
 import time
 
-from core.base_agent import BaseAgent
+from AGENT_FINANCE.core.agent_base import BaseAgent
 from exchanges.base import OrderSide
 
 logger = logging.getLogger(__name__)

@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 AMCIS Q-SEC CORE - File Encryption Module
 Encrypts sensitive project files with AES-256-GCM

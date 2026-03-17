@@ -40,10 +40,10 @@ risk_manager = None
 
 class TradeRequest(BaseModel):
     symbol: str
-    side: str = Field(..., regex="^(buy|sell)$")
+    side: str = Field(..., pattern="^(buy|sell)$")
     amount: float = Field(..., gt=0)
     price: Optional[float] = None
-    order_type: str = Field(default="market", regex="^(market|limit)$")
+    order_type: str = Field(default="market", pattern="^(market|limit)$")
     strategy: str = "manual"
 
 

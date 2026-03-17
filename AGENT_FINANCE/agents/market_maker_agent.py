@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 import time
 
-from core.base_agent import BaseAgent
+from AGENT_FINANCE.core.agent_base import BaseAgent
 from exchanges.base import OrderSide, OrderType
 
 logger = logging.getLogger(__name__)

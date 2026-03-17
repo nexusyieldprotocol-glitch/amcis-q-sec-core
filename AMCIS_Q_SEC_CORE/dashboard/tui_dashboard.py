@@ -86,7 +86,8 @@ class AMCISTerminalDashboard:
             "[green]●[/green] System Protected | [dim]v1.0.0[/dim]",
             border_style="blue",
             box=box.DOUBLE
-        ))n        self.console.print()
+        ))
+        self.console.print()
     
     def show_summary(self):
         """Display summary statistics"""

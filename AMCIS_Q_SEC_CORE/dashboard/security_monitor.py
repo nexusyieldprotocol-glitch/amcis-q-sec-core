@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 AMCIS Q-SEC CORE - Network Security Monitor
 Real-time monitoring and encryption status dashboard
