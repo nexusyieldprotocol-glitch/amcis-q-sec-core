@@ -1,0 +1,1071 @@
+openapi: 3.0.3
+info:
+  title: AMCIS Trading API
+  description: |
+    REST API for trading agent control and monitoring.
+    
+    **IMPORTANT DISCLAIMER**: This is a technical framework for algorithmic trading research.
+    - No performance guarantees
+    - No verified returns
+    - Requires extensive backtesting before use
+    - Cryptocurrency trading carries substantial risk
+  version: 1.0.0
+  contact:
+    name: AMCIS Development Team
+    url: https://github.com/nexusyieldprotocol-glitch/amcis-agent-ecosystem
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://api.amcis.io/v1
+    description: Production server (requires authentication)
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Agents
+    description: Agent management and control
+  - name: Trading
+    description: Order execution and position management
+  - name: Market Data
+    description: Market data and price feeds
+  - name: Portfolio
+    description: Portfolio tracking and allocation
+  - name: Risk
+    description: Risk management and limits
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Returns API health status
+      operationId: healthCheck
+      security: []  # Public endpoint
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /agents:
+    get:
+      tags:
+        - Agents
+      summary: List all agents
+      description: Retrieve list of all configured trading agents
+      operationId: listAgents
+      parameters:
+        - name: status
+          in: query
+          description: Filter by agent status
+          schema:
+            type: string
+            enum: [active, inactive, error]
+      responses:
+        '200':
+          description: List of agents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Agent'
+                  total:
+                    type: integer
+                    example: 5
+
+    post:
+      tags:
+        - Agents
+      summary: Create new agent
+      description: Create and configure a new trading agent
+      operationId: createAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentConfig'
+      responses:
+        '201':
+          description: Agent created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '400':
+          description: Invalid configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /agents/{agentId}:
+    get:
+      tags:
+        - Agents
+      summary: Get agent details
+      description: Retrieve detailed information about a specific agent
+      operationId: getAgent
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Agent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentDetail'
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Agents
+      summary: Delete agent
+      description: Permanently remove an agent and its configuration
+      operationId: deleteAgent
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Agent deleted successfully
+        '404':
+          description: Agent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /agents/{agentId}/start:
+    post:
+      tags:
+        - Agents
+      summary: Start agent
+      description: Start the agent's trading operations
+      operationId: startAgent
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Agent started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentStatus'
+        '400':
+          description: Agent already running or configuration error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /agents/{agentId}/stop:
+    post:
+      tags:
+        - Agents
+      summary: Stop agent
+      description: Stop the agent's trading operations
+      operationId: stopAgent
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Agent stopped
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentStatus'
+
+  /agents/{agentId}/pause:
+    post:
+      tags:
+        - Agents
+      summary: Pause agent
+      description: Temporarily pause agent operations (maintains positions)
+      operationId: pauseAgent
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Agent paused
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentStatus'
+
+  /trade:
+    post:
+      tags:
+        - Trading
+      summary: Execute trade
+      description: Submit a trade order for execution
+      operationId: executeTrade
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TradeRequest'
+      responses:
+        '202':
+          description: Trade accepted for execution
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TradeResponse'
+        '400':
+          description: Invalid trade parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Risk limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /orders:
+    get:
+      tags:
+        - Trading
+      summary: List orders
+      description: Retrieve list of orders with optional filtering
+      operationId: listOrders
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, open, filled, cancelled]
+        - name: symbol
+          in: query
+          schema:
+            type: string
+            example: BTC-USD
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 1000
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+  /orders/{orderId}:
+    get:
+      tags:
+        - Trading
+      summary: Get order details
+      description: Retrieve detailed information about a specific order
+      operationId: getOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Order details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetail'
+        '404':
+          description: Order not found
+
+    delete:
+      tags:
+        - Trading
+      summary: Cancel order
+      description: Cancel an open or pending order
+      operationId: cancelOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Order cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Order cannot be cancelled (already filled)
+
+  /positions:
+    get:
+      tags:
+        - Trading
+      summary: List positions
+      description: Retrieve all open positions
+      operationId: listPositions
+      parameters:
+        - name: symbol
+          in: query
+          description: Filter by symbol
+          schema:
+            type: string
+        - name: agent_id
+          in: query
+          description: Filter by agent
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of positions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  positions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Position'
+
+  /positions/{positionId}:
+    get:
+      tags:
+        - Trading
+      summary: Get position details
+      description: Retrieve detailed information about a position
+      operationId: getPosition
+      parameters:
+        - name: positionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Position details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PositionDetail'
+
+    delete:
+      tags:
+        - Trading
+      summary: Close position
+      description: Close an open position (market order)
+      operationId: closePosition
+      parameters:
+        - name: positionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Position closed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TradeResponse'
+
+  /market/ticker/{symbol}:
+    get:
+      tags:
+        - Market Data
+      summary: Get ticker
+      description: Retrieve current ticker data for a symbol
+      operationId: getTicker
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          schema:
+            type: string
+            example: BTC-USD
+      responses:
+        '200':
+          description: Ticker data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticker'
+        '404':
+          description: Symbol not found
+
+  /market/orderbook/{symbol}:
+    get:
+      tags:
+        - Market Data
+      summary: Get order book
+      description: Retrieve order book for a symbol
+      operationId: getOrderBook
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: depth
+          in: query
+          description: Number of price levels to return
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+      responses:
+        '200':
+          description: Order book data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderBook'
+
+  /portfolio:
+    get:
+      tags:
+        - Portfolio
+      summary: Get portfolio summary
+      description: Retrieve portfolio overview and allocation
+      operationId: getPortfolio
+      responses:
+        '200':
+          description: Portfolio summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioSummary'
+
+  /portfolio/allocations:
+    get:
+      tags:
+        - Portfolio
+      summary: Get current allocations
+      description: Retrieve current capital allocation across strategies
+      operationId: getAllocations
+      responses:
+        '200':
+          description: Current allocations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  allocations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Allocation'
+
+    post:
+      tags:
+        - Portfolio
+      summary: Rebalance portfolio
+      description: Trigger portfolio rebalancing
+      operationId: rebalancePortfolio
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target_allocations:
+                  type: object
+                  additionalProperties:
+                    type: number
+                    format: float
+                    minimum: 0
+                    maximum: 1
+      responses:
+        '200':
+          description: Rebalancing triggered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rebalancing_id:
+                    type: string
+                    format: uuid
+                  status:
+                    type: string
+                    enum: [pending, in_progress, completed]
+
+  /risk:
+    get:
+      tags:
+        - Risk
+      summary: Get risk status
+      description: Retrieve current risk metrics and limits
+      operationId: getRiskStatus
+      responses:
+        '200':
+          description: Risk status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskStatus'
+
+  /risk/limits:
+    post:
+      tags:
+        - Risk
+      summary: Update risk limits
+      description: Modify risk management thresholds
+      operationId: updateRiskLimits
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RiskLimits'
+      responses:
+        '200':
+          description: Risk limits updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskLimits'
+
+  /risk/emergency-stop:
+    post:
+      tags:
+        - Risk
+      summary: Emergency stop
+      description: Immediately halt all trading operations
+      operationId: emergencyStop
+      responses:
+        '200':
+          description: Emergency stop activated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: emergency_stop_activated
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /arbitrage/opportunities:
+    get:
+      tags:
+        - Market Data
+      summary: List arbitrage opportunities
+      description: Retrieve detected arbitrage opportunities
+      operationId: listArbitrageOpportunities
+      parameters:
+        - name: min_profit_pct
+          in: query
+          schema:
+            type: number
+            format: float
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: List of opportunities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  opportunities:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ArbitrageOpportunity'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+        services:
+          type: object
+          additionalProperties:
+            type: string
+            enum: [up, down]
+
+    Agent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          type: string
+          enum: [arbitrage, market_maker, trading, yield]
+        status:
+          type: string
+          enum: [active, inactive, paused, error]
+        config:
+          type: object
+        created_at:
+          type: string
+          format: date-time
+        last_active:
+          type: string
+          format: date-time
+
+    AgentConfig:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        type:
+          type: string
+          enum: [arbitrage, market_maker, trading, yield]
+        enabled:
+          type: boolean
+          default: true
+        config:
+          type: object
+          description: Agent-specific configuration
+
+    AgentDetail:
+      allOf:
+        - $ref: '#/components/schemas/Agent'
+        - type: object
+          properties:
+            metrics:
+              type: object
+              properties:
+                trades_executed:
+                  type: integer
+                uptime_seconds:
+                  type: number
+            positions:
+              type: array
+              items:
+                $ref: '#/components/schemas/Position'
+
+    AgentStatus:
+      type: object
+      properties:
+        agent_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    TradeRequest:
+      type: object
+      required:
+        - symbol
+        - side
+        - amount
+      properties:
+        symbol:
+          type: string
+          example: BTC-USD
+        side:
+          type: string
+          enum: [buy, sell]
+        amount:
+          type: number
+          format: float
+          exclusiveMinimum: 0
+        price:
+          type: number
+          format: float
+          description: Required for limit orders
+        order_type:
+          type: string
+          enum: [market, limit]
+          default: market
+        strategy:
+          type: string
+          description: Strategy identifier
+
+    TradeResponse:
+      type: object
+      properties:
+        trade_id:
+          type: string
+          format: uuid
+        order_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, submitted, filled, failed]
+        symbol:
+          type: string
+        side:
+          type: string
+        amount:
+          type: number
+        price:
+          type: number
+        timestamp:
+          type: string
+          format: date-time
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        agent_id:
+          type: string
+          format: uuid
+        symbol:
+          type: string
+        side:
+          type: string
+          enum: [buy, sell]
+        order_type:
+          type: string
+          enum: [market, limit]
+        amount:
+          type: number
+        price:
+          type: number
+        filled:
+          type: number
+        status:
+          type: string
+          enum: [pending, open, filled, partial, cancelled]
+        created_at:
+          type: string
+          format: date-time
+
+    OrderDetail:
+      allOf:
+        - $ref: '#/components/schemas/Order'
+        - type: object
+          properties:
+            fills:
+              type: array
+              items:
+                type: object
+                properties:
+                  fill_id:
+                    type: string
+                  amount:
+                    type: number
+                  price:
+                    type: number
+                  fee:
+                    type: number
+                  timestamp:
+                    type: string
+                    format: date-time
+
+    Position:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        agent_id:
+          type: string
+          format: uuid
+        symbol:
+          type: string
+        side:
+          type: string
+          enum: [long, short]
+        size:
+          type: number
+        entry_price:
+          type: number
+        current_price:
+          type: number
+        unrealized_pnl:
+          type: number
+        status:
+          type: string
+          enum: [open, closing, closed]
+        opened_at:
+          type: string
+          format: date-time
+
+    PositionDetail:
+      allOf:
+        - $ref: '#/components/schemas/Position'
+        - type: object
+          properties:
+            stop_loss:
+              type: number
+            take_profit:
+              type: number
+            margin_used:
+              type: number
+            leverage:
+              type: number
+
+    Ticker:
+      type: object
+      properties:
+        symbol:
+          type: string
+        bid:
+          type: number
+        ask:
+          type: number
+        last:
+          type: number
+        volume_24h:
+          type: number
+        high_24h:
+          type: number
+        low_24h:
+          type: number
+        change_24h:
+          type: number
+        change_pct_24h:
+          type: number
+        timestamp:
+          type: string
+          format: date-time
+
+    OrderBook:
+      type: object
+      properties:
+        symbol:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        bids:
+          type: array
+          items:
+            type: array
+            items:
+              type: number
+            minItems: 2
+            maxItems: 2
+        asks:
+          type: array
+          items:
+            type: array
+            items:
+              type: number
+            minItems: 2
+            maxItems: 2
+
+    PortfolioSummary:
+      type: object
+      properties:
+        total_capital:
+          type: number
+        deployed:
+          type: number
+        cash:
+          type: number
+        allocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Allocation'
+
+    Allocation:
+      type: object
+      properties:
+        strategy:
+          type: string
+        target_pct:
+          type: number
+        current_pct:
+          type: number
+        target_value:
+          type: number
+        current_value:
+          type: number
+
+    RiskStatus:
+      type: object
+      properties:
+        daily_pnl:
+          type: number
+        daily_trades:
+          type: integer
+        circuit_breaker:
+          type: boolean
+        limits:
+          type: object
+          properties:
+            max_position_size:
+              type: number
+            daily_loss_limit:
+              type: number
+            stop_loss_pct:
+              type: number
+        positions_at_risk:
+          type: array
+          items:
+            type: object
+            properties:
+              position_id:
+                type: string
+              risk_level:
+                type: string
+                enum: [low, medium, high, critical]
+
+    RiskLimits:
+      type: object
+      properties:
+        max_position_size:
+          type: number
+          description: Maximum position size in base currency
+        daily_loss_limit:
+          type: number
+        stop_loss_pct:
+          type: number
+          minimum: 0
+          maximum: 1
+        take_profit_pct:
+          type: number
+          minimum: 0
+          maximum: 1
+        max_orders_per_minute:
+          type: integer
+          minimum: 1
+
+    ArbitrageOpportunity:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        symbol:
+          type: string
+        buy_exchange:
+          type: string
+        sell_exchange:
+          type: string
+        buy_price:
+          type: number
+        sell_price:
+          type: number
+        profit_pct:
+          type: number
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        valid_until:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object

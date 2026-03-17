@@ -1,0 +1,903 @@
+# NIST Cybersecurity Framework 2.0 Controls Mapping
+# Version: 2.0.0
+# Source: https://www.nist.gov/cybersecurity-framework
+
+# CSF 2.0 introduces GOVERN function (GV) as the 6th core function
+# alongside Identify (ID), Protect (PR), Detect (DE), Respond (RS), Recover (RC)
+
+framework:
+  name: NIST Cybersecurity Framework 2.0
+  version: "2.0.0"
+  publication_date: 2024-02-26
+  
+functions:
+  govern:
+    code: GV
+    description: Establish and monitor cybersecurity risk management strategy, expectations, and policy
+    categories:
+      gv_oc:
+        name: Organizational Context
+        description: Establish organizational cybersecurity risk management expectations
+        controls:
+          - id: GV.OC-01
+            description: Organizational cybersecurity risk management expectations are established
+            implementation: |
+              Document risk appetite statement with measurable thresholds
+              Define roles via RACI matrix for cybersecurity decisions
+              
+          - id: GV.OC-02
+            description: Risk appetite and tolerance are established
+            implementation: |
+              Quantitative thresholds (e.g., max acceptable downtime hours)
+              Qualitative statements (zero tolerance for data exfiltration)
+              
+          - id: GV.OC-03
+            description: Cybersecurity roles and responsibilities are established
+            implementation: |
+              CISO reporting structure documented
+              Board-level cybersecurity committee charter
+              
+          - id: GV.OC-04
+            description: Cybersecurity is included in organizational policies
+            implementation: |
+              Acceptable Use Policy (AUP)
+              Data Classification Policy
+              Third-Party Risk Management Policy
+              
+          - id: GV.OC-05
+            description: Legal and regulatory requirements are understood
+            implementation: |
+              Compliance matrix (GDPR, SOX, HIPAA, etc.)
+              Regular legal review of cybersecurity obligations
+
+      gv_rm:
+        name: Risk Management Strategy
+        description: Integrate cybersecurity risk management into enterprise risk management
+        controls:
+          - id: GV.RM-01
+            description: Risk management strategy is established
+            implementation: |
+              Risk assessment methodology (qualitative vs quantitative)
+              Risk scoring matrix (Impact x Likelihood)
+              
+          - id: GV.RM-02
+            description: Risk assessment outcomes inform risk response
+            implementation: |
+              Risk register with treatment decisions (Accept, Mitigate, Transfer, Avoid)
+              Cost-benefit analysis for security investments
+              
+          - id: GV.RM-03
+            description: Risk response is determined and implemented
+            implementation: |
+              Security control selection based on NIST SP 800-53
+              Cyber insurance policy review
+
+      gv_rr:
+        name: Roles, Responsibilities, and Authorities
+        description: Establish roles and responsibilities for cybersecurity
+        controls:
+          - id: GV.RR-01
+            description: Roles and responsibilities are established
+            implementation: |
+              Job descriptions include cybersecurity accountability
+              Security champions in each department
+              
+          - id: GV.RR-02
+            description: Cybersecurity responsibilities are assigned
+            implementation: |
+              Privileged access management (PAM) policy
+              Separation of duties matrix
+              
+          - id: GV.RR-03
+            description: Authorities are documented
+            implementation: |
+              Delegation of authority for emergency actions
+              Change approval authority levels
+
+      gv_po:
+        name: Policy
+        description: Establish cybersecurity policies
+        controls:
+          - id: GV.PO-01
+            description: Policy for managing cybersecurity risk is established
+            implementation: |
+              Information Security Policy (master document)
+              Policy review cycle (annual minimum)
+              
+          - id: GV.PO-02
+            description: Policy communicates organizational cybersecurity risk management
+            implementation: |
+              Employee acknowledgment of policies
+              Policy exception process with risk acceptance
+
+      gv_ov:
+        name: Oversight
+        description: Provide oversight for cybersecurity risk management
+        controls:
+          - id: GV.OV-01
+            description: Cybersecurity risk management performance is evaluated
+            implementation: |
+              Key Risk Indicators (KRIs) dashboard
+              Monthly security metrics to leadership
+              
+          - id: GV.OV-02
+            description: Cybersecurity risk management is reviewed
+            implementation: |
+              Quarterly board cybersecurity briefings
+              Annual cybersecurity program assessment
+              
+          - id: GV.OV-03
+            description: Cybersecurity risk management strategy is adjusted
+            implementation: |
+              Post-incident strategy review
+              Threat landscape updates feed into strategy
+
+      gv_sc:
+        name: Cybersecurity Supply Chain Risk Management
+        description: Manage cybersecurity risks in the supply chain
+        controls:
+          - id: GV.SC-01
+            description: Cybersecurity supply chain risk management is established
+            implementation: |
+              Supplier security requirements in contracts
+              Critical vendor inventory with risk ratings
+              
+          - id: GV.SC-02
+            description: Cybersecurity supply chain risk management is integrated
+            implementation: |
+              Vendor security questionnaires (SIG/VSA)
+              Third-party security assessment program
+
+  identify:
+    code: ID
+    description: Understand current cybersecurity risks
+    categories:
+      id_am:
+        name: Asset Management
+        description: Manage assets consistent with risk strategy
+        controls:
+          - id: ID.AM-01
+            description: Inventories of hardware managed
+            implementation: |
+              Automated asset discovery ( Lansweeper, ServiceNow)
+              Asset ownership assignment
+              
+          - id: ID.AM-02
+            description: Inventories of software, services, and systems managed
+            implementation: |
+              Software Bill of Materials (SBOM) generation
+              License compliance tracking
+              
+          - id: ID.AM-03
+            description: Representations of digital assets managed
+            implementation: |
+              Network topology diagrams
+              Data flow diagrams (DFD)
+              
+          - id: ID.AM-04
+            description: Inventories of services provided are maintained
+            implementation: |
+              Service catalog with security classifications
+              API inventory with authentication methods
+              
+          - id: ID.AM-05
+            description: Assets are prioritized
+            implementation: |
+              Critical asset identification (crown jewels)
+              Business Impact Analysis (BIA)
+              
+          - id: ID.AM-07
+            description: Assets are inventoried
+            implementation: |
+              Configuration Management Database (CMDB)
+              Asset lifecycle management
+
+      id_be:
+        name: Business Environment
+        description: Understand organizational mission and objectives
+        controls:
+          - id: ID.BE-01
+            description: Mission and objectives are documented
+            implementation: |
+              Business process mapping
+              Critical business function identification
+              
+          - id: ID.BE-04
+            description: Dependencies and critical functions are documented
+            implementation: |
+              Dependency mapping (internal and external)
+              Single points of failure analysis
+
+      id_ra:
+        name: Risk Assessment
+        description: Understand cybersecurity risk
+        controls:
+          - id: ID.RA-01
+            description: Vulnerabilities are identified
+            implementation: |
+              Vulnerability scanning (Tenable, Qualys)
+              Penetration testing (annual minimum)
+              
+          - id: ID.RA-02
+            description: Cyber threat intelligence is received
+            implementation: |
+              Threat intel feeds (MISP, commercial TI)
+              Dark web monitoring
+              
+          - id: ID.RA-03
+            description: Internal and external threats are identified
+            implementation: |
+              Threat modeling (STRIDE, MITRE ATT&CK)
+              Insider threat program
+              
+          - id: ID.RA-04
+            description: Potential impacts are assessed
+            implementation: |
+              Quantitative impact analysis (revenue loss per hour)
+              Reputational impact assessment
+              
+          - id: ID.RA-05
+            description: Risk responses are identified
+            implementation: |
+              Risk treatment plan with timelines
+              Residual risk acceptance documentation
+              
+          - id: ID.RA-06
+            description: Risk responses are prioritized
+            implementation: |
+              Risk scoring based on CVSS v3.1
+              Risk heat map visualization
+              
+          - id: ID.RA-07
+            description: Changes are managed
+            implementation: |
+              Change Advisory Board (CAB)
+              Security review in change process
+              
+          - id: ID.RA-08
+            description: Criticality is determined
+            implementation: |
+              Asset criticality scoring matrix
+              Crown jewel identification
+              
+          - id: ID.RA-09
+            description: Criticality is reviewed
+            implementation: |
+              Annual criticality review
+              Post-change criticality updates
+              
+          - id: ID.RA-10
+            description: Risk response effectiveness is evaluated
+            implementation: |
+              Control effectiveness testing
+              Key Performance Indicators (KPIs) for risk reduction
+
+      id_im:
+        name: Improvement
+        description: Improve cybersecurity risk management processes
+        controls:
+          - id: ID.IM-01
+            description: Improvements are identified
+            implementation: |
+              Gap analysis against frameworks (NIST CSF, ISO 27001)
+              Lessons learned from incidents
+              
+          - id: ID.IM-02
+            description: Improvements are implemented
+            implementation: |
+              Remediation project roadmap
+              Security control enhancement program
+
+  protect:
+    code: PR
+    description: Implement safeguards to manage cybersecurity risks
+    categories:
+      pr_aa:
+        name: Identity Management, Authentication, and Access Control
+        description: Manage access to assets and information
+        controls:
+          - id: PR.AA-01
+            description: Identities and credentials are issued, managed, verified, revoked
+            implementation: |
+              Identity and Access Management (IAM) system
+              Automated provisioning/de-provisioning
+              
+          - id: PR.AA-02
+            description: Access permissions and authorizations are managed
+            implementation: |
+              Role-Based Access Control (RBAC)
+              Principle of Least Privilege (PoLP)
+              
+          - id: PR.AA-03
+            description: Access is verified when identities and credentials are asserted
+            implementation: |
+              Multi-Factor Authentication (MFA) enforcement
+              Zero Trust Network Access (ZTNA)
+              
+          - id: PR.AA-04
+            description: Access permissions and authorizations are enforced
+            implementation: |
+              Access Control Lists (ACL)
+              Just-In-Time (JIT) access
+              
+          - id: PR.AA-05
+            description: Access is reviewed
+            implementation: |
+              Quarterly access reviews
+              Privileged access recertification
+              
+          - id: PR.AA-06
+            description: Physical access to assets is managed
+            implementation: |
+              Badge access systems
+              Data center visitor logs
+
+      pr_at:
+        name: Awareness and Training
+        description: Ensure personnel have cybersecurity awareness
+        controls:
+          - id: PR.AT-01
+            description: Personnel are provided with awareness and training
+            implementation: |
+              Security awareness training (annual)
+              Phishing simulation campaigns
+              
+          - id: PR.AT-02
+            description: Personnel understand their roles and responsibilities
+            implementation: |
+              Role-specific security training
+              Incident response role cards
+
+      pr_ds:
+        name: Data Security
+        description: Manage data consistent with risk strategy
+        controls:
+          - id: PR.DS-01
+            description: Data are protected at rest
+            implementation: |
+              AES-256 encryption for databases
+              Full Disk Encryption (FDE)
+              
+          - id: PR.DS-02
+            description: Data are protected in transit
+            implementation: |
+              TLS 1.3 for all communications
+              VPN for remote access
+              
+          - id: PR.DS-03
+            description: Data are protected when in use
+            implementation: |
+              Confidential Computing (enclaves)
+              Memory encryption
+              
+          - id: PR.DS-04
+            description: Adequate capacity to ensure availability is maintained
+            implementation: |
+              Capacity planning reviews
+              Auto-scaling for cloud resources
+              
+          - id: PR.DS-05
+            description: Protections against data leaks are implemented
+            implementation: |
+              Data Loss Prevention (DLP) tools
+              USB device control
+              
+          - id: PR.DS-06
+            description: Data are protected against data breaches
+            implementation: |
+              Database Activity Monitoring (DAM)
+              Tokenization of sensitive data
+              
+          - id: PR.DS-07
+            description: Data are protected through disposal
+            implementation: |
+              Secure data destruction (NIST SP 800-88)
+              Certificate of destruction
+              
+          - id: PR.DS-08
+            description: Data are protected through backups
+            implementation: |
+              3-2-1 backup strategy
+              Immutable backups (WORM storage)
+              
+          - id: PR.DS-09
+            description: Data are protected through integrity checks
+            implementation: |
+              File integrity monitoring (FIM)
+              Blockchain for audit logs
+              
+          - id: PR.DS-10
+            description: Data are protected through cryptographic mechanisms
+            implementation: |
+              Hardware Security Modules (HSM)
+              Key rotation procedures
+              
+          - id: PR.DS-11
+            description: Data security is improved
+            implementation: |
+              Data security metrics review
+              Data classification accuracy assessment
+
+      pr_ps:
+        name: Platform Security
+        description: Implement security measures for platforms
+        controls:
+          - id: PR.PS-01
+            description: Configuration management is established
+            implementation: |
+              CIS Benchmarks implementation
+              Configuration drift detection
+              
+          - id: PR.PS-02
+            description: Software is maintained
+            implementation: |
+              Patch management (critical within 72 hours)
+              End-of-life software inventory
+              
+          - id: PR.PS-03
+            description: Hardware is maintained
+            implementation: |
+              Firmware updates
+              End-of-life hardware replacement
+              
+          - id: PR.PS-04
+            description: Assets are logged and monitored
+            implementation: |
+              Security Information and Event Management (SIEM)
+              Endpoint Detection and Response (EDR)
+              
+          - id: PR.PS-05
+            description: Installation and execution of unauthorized software are prevented
+            implementation: |
+              Application whitelisting
+              Software restriction policies
+              
+          - id: PR.PS-06
+            description: Secure software development practices are integrated
+            implementation: |
+              Secure SDLC (OWASP SAMM)
+              Code review requirements
+              
+          - id: PR.PS-07
+            description: Devices and systems are hardened
+            implementation: |
+              Server hardening checklists
+              Container image scanning
+              
+          - id: PR.PS-08
+            description: Security technologies are employed
+            implementation: |
+              Web Application Firewall (WAF)
+              Intrusion Prevention System (IPS)
+
+      pr_ir:
+        name: Technology Infrastructure Resilience
+        description: Implement resilience measures
+        controls:
+          - id: PR.IR-01
+            description: Networks are protected from unauthorized access
+            implementation: |
+              Network segmentation (VLANs, microsegmentation)
+              Firewall rule reviews
+              
+          - id: PR.IR-02
+            description: Networks are protected from attacks
+            implementation: |
+              DDoS protection service
+              Network intrusion detection
+              
+          - id: PR.IR-03
+            description: Technologies are adequate to support resilience
+            implementation: |
+              High Availability (HA) architecture
+              Disaster Recovery (DR) sites
+              
+          - id: PR.IR-04
+            description: Technologies are adequate to support security functions
+            implementation: |
+              Security tool performance monitoring
+              Log retention capacity planning
+
+  detect:
+    code: DE
+    description: Timely discovery of cybersecurity events
+    categories:
+      de_ae:
+        name: Anomaly Detection and Analysis
+        description: Detect anomalous activity
+        controls:
+          - id: DE.AE-01
+            description: Indicators of compromise and indicators of attack are known
+            implementation: |
+              IOC database (MISP integration)
+              MITRE ATT&CK mapping
+              
+          - id: DE.AE-02
+            description: Anomalous activity is detected and analyzed
+            implementation: |
+              User and Entity Behavior Analytics (UEBA)
+              ML-based anomaly detection
+              
+          - id: DE.AE-03
+            description: Event data are collected and correlated
+            implementation: |
+              SIEM correlation rules
+              SOAR playbooks
+              
+          - id: DE.AE-04
+            description: Impact of events is determined
+            implementation: |
+              Incident severity matrix
+              Business impact assessment
+              
+          - id: DE.AE-05
+            description: Incident alert thresholds are established
+            implementation: |
+              Alert tuning procedures
+              False positive tracking
+              
+          - id: DE.AE-06
+            description: Events are analyzed
+            implementation: |
+              Threat hunting program
+              Digital forensics capability
+              
+          - id: DE.AE-07
+            description: Cyber threat intelligence is used for detection
+            implementation: |
+              TI platform integration (Mandiant, Recorded Future)
+              STIX/TAXII feeds
+              
+          - id: DE.AE-08
+            description: Event data are aggregated
+            implementation: |
+              Centralized logging (syslog, cloud-native)
+              Log normalization
+              
+          - id: DE.AE-09
+            description: Detection processes improve
+            implementation: |
+              Detection engineering team
+              Purple team exercises
+
+      de_cm:
+        name: Continuous Monitoring
+        description: Monitor cybersecurity events
+        controls:
+          - id: DE.CM-01
+            description: Networks are monitored
+            implementation: |
+              Network Traffic Analysis (NTA)
+              NetFlow/sFlow collection
+              
+          - id: DE.CM-02
+            description: Physical environment is monitored
+            implementation: |
+              CCTV with retention
+              Environmental sensors
+              
+          - id: DE.CM-03
+            description: Personnel activity is monitored
+            implementation: |
+              Insider threat monitoring
+              Employee activity logging
+              
+          - id: DE.CM-04
+            description: Malicious code is detected
+            implementation: |
+              Antivirus/Next-Gen AV (NGAV)
+              Sandbox analysis
+              
+          - id: DE.CM-05
+            description: Unauthorized mobile code is detected
+            implementation: |
+              Mobile Device Management (MDM)
+              Mobile Application Management (MAM)
+              
+          - id: DE.CM-06
+            description: External service provider activity is monitored
+            implementation: |
+              Third-party access logging
+              Vendor activity reviews
+              
+          - id: DE.CM-07
+            description: Monitoring activities are performed
+            implementation: |
+              24/7 Security Operations Center (SOC)
+              Managed Detection and Response (MDR)
+              
+          - id: DE.CM-08
+            description: Vulnerability scans are performed
+            implementation: |
+              Vulnerability management program
+              Penetration testing schedule
+              
+          - id: DE.CM-09
+            description: Security posture is assessed
+            implementation: |
+              Continuous compliance monitoring
+              Security scorecards
+
+  respond:
+    code: RS
+    description: Take action regarding detected cybersecurity incidents
+    categories:
+      rs_rp:
+        name: Response Planning
+        description: Execute response plans
+        controls:
+          - id: RS.RP-01
+            description: Response plan is executed
+            implementation: |
+              Incident Response Plan (IRP) activation
+              War room procedures
+              
+          - id: RS.RP-02
+            description: Incident response team is established
+            implementation: |
+              CSIRT charter and roster
+              On-call rotation
+              
+          - id: RS.RP-03
+            description: Response personnel are trained
+            implementation: |
+              Tabletop exercises (quarterly)
+              Technical drills
+              
+          - id: RS.RP-04
+            description: Response plan is updated
+            implementation: |
+              Post-incident review process
+              Plan version control
+              
+          - id: RS.RP-05
+            description: Response plans are tested
+            implementation: |
+              Red team exercises
+              Disaster recovery drills
+              
+          - id: RS.RP-06
+            description: Lessons learned are incorporated
+            implementation: |
+              After-action reports
+              Improvement tracking
+
+      rs_co:
+        name: Communications
+        description: Coordinate response activities
+        controls:
+          - id: RS.CO-01
+            description: Personnel know their roles and order of operations
+            implementation: |
+              Incident response role cards
+              Escalation matrix
+              
+          - id: RS.CO-02
+            description: Incidents are reported
+            implementation: |
+              Incident classification levels
+              Reporting timeline requirements
+              
+          - id: RS.CO-03
+            description: Information is shared
+            implementation: |
+              Information Sharing and Analysis Center (ISAC) participation
+              Law enforcement liaison
+              
+          - id: RS.CO-04
+            description: Coordination with stakeholders occurs
+            implementation: |
+              Customer communication templates
+              Regulatory notification procedures
+              
+          - id: RS.CO-05
+            description: Voluntary information sharing occurs
+            implementation: |
+              CISA reporting
+              Industry threat sharing
+
+      rs_an:
+        name: Analysis
+        description: Conduct analysis of cybersecurity incidents
+        controls:
+          - id: RS.AN-01
+            description: Investigations are conducted
+            implementation: |
+              Forensic investigation procedures
+              Chain of custody documentation
+              
+          - id: RS.AN-02
+            description: Digital forensics are performed
+            implementation: |
+              Forensic tools (Autopsy, Volatility)
+              Memory dump analysis
+              
+          - id: RS.AN-03
+            description: Analysis is performed
+            implementation: |
+              Root cause analysis (RCA)
+              Timeline reconstruction
+              
+          - id: RS.AN-04
+            description: Incidents are categorized
+            implementation: |
+              Incident taxonomy (malware, phishing, etc.)
+              Severity classification
+              
+          - id: RS.AN-05
+            description: Data are preserved
+            implementation: |
+              Evidence retention policy
+              Legal hold procedures
+              
+          - id: RS.AN-06
+            description: Vulnerabilities are identified
+            implementation: |
+              Vulnerability root cause analysis
+              Weakness cataloging (CWE)
+              
+          - id: RS.AN-07
+            description: Forensic data are collected
+            implementation: |
+              System image capture
+              Log preservation
+              
+          - id: RS.AN-08
+            description: Forensic data are analyzed
+            implementation: |
+              Artifact analysis
+              Malware reverse engineering
+              
+          - id: RS.AN-09
+            description: Forensic data are reported
+            implementation: |
+              Forensic reports
+              Expert witness preparation
+
+      rs_mi:
+        name: Mitigation
+        description: Contain and eradicate incidents
+        controls:
+          - id: RS.MI-01
+            description: Incidents are contained
+            implementation: |
+              Network isolation procedures
+              Account disablement
+              
+          - id: RS.MI-02
+            description: Incidents are eradicated
+            implementation: |
+              Malware removal procedures
+              System rebuilding procedures
+              
+          - id: RS.MI-03
+            description: Newly identified vulnerabilities are mitigated
+            implementation: |
+              Emergency patching process
+              Compensating controls
+              
+          - id: RS.MI-04
+            description: Ongoing incidents are monitored
+            implementation: |
+              Incident tracking dashboard
+              Status updates to stakeholders
+              
+          - id: RS.MI-05
+            description: The effectiveness of mitigations is determined
+            implementation: |
+              Control effectiveness testing
+              Validation of eradication
+
+  recover:
+    code: RC
+    description: Restore assets and operations
+    categories:
+      rc_rp:
+        name: Recovery Planning
+        description: Execute recovery plans
+        controls:
+          - id: RC.RP-01
+            description: Recovery plan is executed
+            implementation: |
+              Disaster Recovery Plan (DRP) activation
+              Business Continuity Plan (BCP) activation
+              
+          - id: RC.RP-02
+            description: Recovery personnel are identified
+            implementation: |
+              DR team roster
+              Succession planning
+              
+          - id: RC.RP-03
+            description: Recovery personnel are trained
+            implementation: |
+              DR training exercises
+              Role-specific recovery procedures
+              
+          - id: RC.RP-04
+            description: Recovery plan is updated
+            implementation: |
+              Post-DR test updates
+              System change impact on DR
+              
+          - id: RC.RP-05
+            description: Recovery capabilities are tested
+            implementation: |
+              Full DR failover tests (annual)
+              Component recovery tests
+              
+          - id: RC.RP-06
+            description: Alternative processing capabilities are tested
+            implementation: |
+              Hot site validation
+              Cloud DR testing
+              
+          - id: RC.RP-07
+            description: Recovery activities incorporate lessons learned
+            implementation: |
+              DR after-action reviews
+              Recovery time improvement tracking
+
+      rc_co:
+        name: Communications
+        description: Coordinate recovery activities
+        controls:
+          - id: RC.CO-01
+            description: Public relations are managed
+            implementation: |
+              Crisis communication plan
+              Media response templates
+              
+          - id: RC.CO-02
+            description: Reputation is repaired
+            implementation: |
+              Customer trust rebuilding
+              Transparency reports
+              
+          - id: RC.CO-03
+            description: Recovery activities are communicated
+            implementation: |
+              Status page updates
+              Stakeholder notifications
+
+      rc_im:
+        name: Improvements
+        description: Improve recovery processes
+        controls:
+          - id: RC.IM-01
+            description: Recovery plans are improved
+            implementation: |
+              Recovery plan gap analysis
+              Industry best practice adoption
+              
+          - id: RC.IM-02
+            description: Recovery capabilities are improved
+            implementation: |
+              RTO/RPO optimization
+              Automation of recovery tasks
+
+implementation_tiers:
+  tier_1:
+    name: Partial
+    description: Organizational cybersecurity risk management practices are not formalized
+    
+  tier_2:
+    name: Risk Informed
+    description: Risk management practices are approved by management but not organization-wide
+    
+  tier_3:
+    name: Repeatable
+    description: Organization-wide, risk-informed policies, processes, and procedures
+    
+  tier_4:
+    name: Adaptive
+    description: Organization adapts practices based on lessons learned and predictive indicators
+
+profiles:
+  description: A representation of the outcomes based on business requirements
+  current_profile:
+    description: The "as is" state
+  target_profile:
+    description: The "to be" state
+  gap_analysis:
+    description: Identifies gaps between current and target for prioritization
