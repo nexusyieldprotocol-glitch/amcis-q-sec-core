@@ -1,0 +1,183 @@
+version: '3.8'
+
+services:
+  # Main Financial Agent API
+  agent-api:
+    build: .
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=postgresql://amcis:${DB_PASSWORD}@postgres:5432/amcis_finance
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET=${JWT_SECRET}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - amcis-finance
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Trading Agent Worker
+  trading-worker:
+    build: .
+    command: python -m agents.trading_agent
+    environment:
+      - DATABASE_URL=postgresql://amcis:${DB_PASSWORD}@postgres:5432/amcis_finance
+      - REDIS_URL=redis://redis:6379/0
+      - AGENT_TYPE=trading
+    depends_on:
+      - postgres
+      - redis
+      - agent-api
+    networks:
+      - amcis-finance
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+
+  # Arbitrage Agent Worker
+  arbitrage-worker:
+    build: .
+    command: python -m agents.arbitrage_agent
+    environment:
+      - DATABASE_URL=postgresql://amcis:${DB_PASSWORD}@postgres:5432/amcis_finance
+      - REDIS_URL=redis://redis:6379/0
+      - AGENT_TYPE=arbitrage
+    depends_on:
+      - postgres
+      - redis
+      - agent-api
+    networks:
+      - amcis-finance
+    restart: unless-stopped
+    deploy:
+      replicas: 1
+
+  # Yield Agent Worker
+  yield-worker:
+    build: .
+    command: python -m agents.yield_agent
+    environment:
+      - DATABASE_URL=postgresql://amcis:${DB_PASSWORD}@postgres:5432/amcis_finance
+      - REDIS_URL=redis://redis:6379/0
+      - AGENT_TYPE=yield
+    depends_on:
+      - postgres
+      - redis
+      - agent-api
+    networks:
+      - amcis-finance
+    restart: unless-stopped
+    deploy:
+      replicas: 1
+
+  # Market Analysis Swarm
+  market-analyzer:
+    build: .
+    command: python -m agents.market_analyzer
+    environment:
+      - DATABASE_URL=postgresql://amcis:${DB_PASSWORD}@postgres:5432/amcis_finance
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - amcis-finance
+    restart: unless-stopped
+
+  # Treasury Manager
+  treasury-manager:
+    build: .
+    command: python -m core.treasury
+    environment:
+      - DATABASE_URL=postgresql://amcis:${DB_PASSWORD}@postgres:5432/amcis_finance
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - amcis-finance
+    restart: unless-stopped
+
+  # Database
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=amcis
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=amcis_finance
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - amcis-finance
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U amcis"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Message Queue
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - amcis-finance
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - amcis-finance
+    restart: unless-stopped
+
+  # Grafana Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+      - grafana_data:/var/lib/grafana
+    networks:
+      - amcis-finance
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  amcis-finance:
+    driver: bridge

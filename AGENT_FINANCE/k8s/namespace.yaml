@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: amcis-finance
+  labels:
+    name: amcis-finance
+    app.kubernetes.io/name: amcis-finance
+    app.kubernetes.io/component: financial-agents

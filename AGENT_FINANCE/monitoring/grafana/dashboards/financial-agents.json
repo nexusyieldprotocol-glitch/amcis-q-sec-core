@@ -1,0 +1,210 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "AMCIS Financial AI Agents",
+    "tags": ["amcis", "finance", "trading"],
+    "timezone": "utc",
+    "schemaVersion": 36,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Total Revenue (24h)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(agent_revenue_total[24h]))",
+            "legendFormat": "Revenue"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 1000}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Net Profit (24h)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(agent_profit_total[24h]))",
+            "legendFormat": "Profit"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": -1000},
+                {"color": "yellow", "value": 0},
+                {"color": "green", "value": 1000}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Win Rate",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "sum(agent_trades_successful) / sum(agent_trades_total)",
+            "legendFormat": "Win Rate"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 0.45},
+                {"color": "green", "value": 0.55}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0}
+      },
+      {
+        "id": 4,
+        "title": "Assets Under Management",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "treasury_aum",
+            "legendFormat": "AUM"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0}
+      },
+      {
+        "id": 5,
+        "title": "Revenue by Source",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum by (source) (agent_revenue_total)",
+            "legendFormat": "{{source}}"
+          }
+        ],
+        "options": {
+          "legend": {"displayMode": "table", "placement": "right"}
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4}
+      },
+      {
+        "id": 6,
+        "title": "Profit Over Time",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(agent_profit_total[5m])",
+            "legendFormat": "{{agent}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "custom": {"lineWidth": 2, "fillOpacity": 10}
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4}
+      },
+      {
+        "id": 7,
+        "title": "Active Trades",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "trading_position_info",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "indexByName": {"symbol": 0, "side": 1, "amount": 2, "entry_price": 3, "unrealized_pnl": 4}
+            }
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12}
+      },
+      {
+        "id": 8,
+        "title": "Arbitrage Opportunities",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "arbitrage_opportunity_info{status=\"active\"}",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12}
+      },
+      {
+        "id": 9,
+        "title": "Yield Positions",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "yield_position_info",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20}
+      },
+      {
+        "id": 10,
+        "title": "Agent Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "agent_up",
+            "legendFormat": "{{agent}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"options": {"0": {"text": "DOWN"}}, "type": "value"},
+              {"options": {"1": {"text": "UP"}}, "type": "value"}
+            ],
+            "thresholds": {
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20}
+      }
+    ]
+  }
+}
