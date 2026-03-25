@@ -1,0 +1,15 @@
+{
+  "title": "AMCIS System Health",
+  "panels": [
+    {
+      "title": "CPU Usage",
+      "type": "graph",
+      "targets": [{ "expr": "node_cpu_seconds_total" }]
+    },
+    {
+      "title": "Memory Usage",
+      "type": "graph",
+      "targets": [{ "expr": "node_memory_Active_bytes" }]
+    }
+  ]
+}

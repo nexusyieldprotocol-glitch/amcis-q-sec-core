@@ -1,0 +1,20 @@
+{
+  "title": "AMCIS Compliance Score (NIST CSF 2.0)",
+  "panels": [
+    {
+      "title": "Overall Score",
+      "type": "gauge",
+      "targets": [{ "expr": "amcis_compliance_overall_score" }],
+      "fieldConfig": {
+        "values": true,
+        "thresholds": {
+          "steps": [
+            { "color": "red", "value": 0 },
+            { "color": "yellow", "value": 0.7 },
+            { "color": "green", "value": 0.9 }
+          ]
+        }
+      }
+    }
+  ]
+}

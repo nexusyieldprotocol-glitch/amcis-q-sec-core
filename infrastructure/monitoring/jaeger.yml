@@ -1,0 +1,18 @@
+collector:
+  zipkin:
+    host_port: :9411
+  otlp:
+    enabled: true
+    protocols:
+      grpc:
+        endpoint: :4317
+      http:
+        endpoint: :4318
+
+storage:
+  type: memory # For development, use cassandra or elasticsearch for production
+  memory:
+    max_traces: 10000
+
+query:
+  base_path: /jaeger

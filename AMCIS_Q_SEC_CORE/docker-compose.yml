@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  crypto-service:
+    build:
+      context: ./crypto_service
+      dockerfile: Dockerfile
+    container_name: amcis-crypto
+    environment:
+      - RUST_LOG=info
+      - SERVICE_PORT=50051
+    ports:
+      - "50051:50051"
+    networks:
+      - amcis-secure
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=:50051"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  auth-service:
+    build:
+      context: ./auth_service
+      dockerfile: Dockerfile
+    container_name: amcis-auth
+    environment:
+      - AMCIS_JWT_ISSUER=amcis-auth
+      - AMCIS_JWT_AUDIENCE=amcis-api
+      - SERVICE_PORT=50052
+    ports:
+      - "50052:50052"
+    networks:
+      - amcis-secure
+    restart: unless-stopped
+    depends_on:
+      - crypto-service
+
+  api-gateway:
+    build:
+      context: ./api_gateway
+      dockerfile: Dockerfile
+    container_name: amcis-gateway
+    environment:
+      - AMCIS_BIND_ADDRESS=0.0.0.0:8443
+      - AMCIS_ENABLE_PQ=true
+      - AMCIS_CRYPTO_ENDPOINT=crypto-service:50051
+      - AMCIS_AUTH_ENDPOINT=auth-service:50052
+      - RUST_LOG=info
+    ports:
+      - "8443:8443"
+    networks:
+      - amcis-secure
+    restart: unless-stopped
+    depends_on:
+      - crypto-service
+      - auth-service
+
+networks:
+  amcis-secure:
+    driver: bridge
+    internal: false

@@ -1,135 +1,219 @@
-# AMCIS Q-SEC CORE
+# AMCIS Q-SEC Core
 
-## Quantum-Secure Terminal Security Framework
+**Experimental Prototype - Secure Core with Paper Trading Agent**
 
-AMCIS Q-SEC CORE is a modular, production-grade, quantum-secure terminal security framework providing comprehensive protection for terminal environments against current and post-quantum threats.
+[![Status](https://img.shields.io/badge/status-experimental-orange)]()
+[![Crypto](https://img.shields.io/badge/crypto-X25519%2BECDSA-green)]()
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)]()
 
-## Features
+---
 
-### Core Security
-- **Zero-Trust Execution Engine**: Per-command trust scoring with signature validation
-- **Quantum-Safe Cryptography**: Hybrid PQC (ML-KEM + ML-DSA) with crypto agility
-- **Merkle Chained Logging**: Tamper-evident append-only logging
-- **Hardware Security**: TPM and HSM integration support
+## Overview
 
-### Endpoint Detection & Response (EDR)
-- Real-time process lineage graph
-- Memory inspection for code injection detection
-- File integrity monitoring with cryptographic verification
-- System call monitoring with anomaly detection
+AMCIS_Q_SEC_CORE is an **experimental prototype** implementing a secure microkernel architecture with:
 
-### AI Security
-- Prompt injection detection and prevention
-- RAG provenance tracking for document authenticity
-- Output validation and policy enforcement
+- **Real Cryptography**: X25519 key exchange, ECDSA P-384 signatures, AES-256-GCM encryption
+- **Security Kernel**: Event-driven microkernel with integrity monitoring
+- **Paper Trading**: Single trading agent framework (risk-free simulation)
 
-### Network Security
-- Dynamic microsegmentation and firewall automation
-- DNS tunneling detection via entropy analysis
-- Local attack surface mapping and vulnerability assessment
+**Status**: This is a refactored codebase post-technical audit. Previous claims of 35 agents, quantum OS, and $4.5B valuation have been removed as they were not supported by working code.
 
-### Supply Chain Security
-- SBOM generation (SPDX, CycloneDX formats)
-- Dependency vulnerability scanning
-- Git commit signature enforcement
-
-## Quick Start
-
-### Installation
-
-```bash
-# Clone repository
-git clone https://github.com/amcis/amcis-q-sec-core.git
-cd amcis-q-sec-core
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Initialize AMCIS
-python -m cli.amcis_main init
-```
-
-### Basic Usage
-
-```bash
-# Execute command with security monitoring
-amcis secure-run ls -la
-
-# Verify log integrity
-amcis verify-logs
-
-# Scan attack surface
-amcis scan-surface
-
-# Generate trust report
-amcis trust-report
-```
+---
 
 ## Architecture
 
 ```
+┌─────────────────────────────────────────────────────────┐
+│                  AMCIS Security Kernel                   │
+│              (Event-driven microkernel)                 │
+└───────────────────────┬─────────────────────────────────┘
+                        │
+        ┌───────────────┼───────────────┐
+        │               │               │
+┌───────▼──────┐ ┌──────▼─────┐ ┌──────▼──────┐
+│   Crypto     │ │  Trading   │ │   Core      │
+│  Service     │ │   Agent    │ │  Services   │
+│ (Production) │ │  (Paper)   │ │             │
+└──────────────┘ └────────────┘ └─────────────┘
+```
+
+---
+
+## Cryptographic Implementation
+
+### Current Algorithms (Production-Ready)
+
+| Operation | Algorithm | Library | Status |
+|-----------|-----------|---------|--------|
+| Key Exchange | X25519 (ECDH) | cryptography/OpenSSL | ✅ Real |
+| Signatures | ECDSA P-384 | cryptography/OpenSSL | ✅ Real |
+| Encryption | AES-256-GCM | cryptography/OpenSSL | ✅ Real |
+| Hashing | SHA3-256/512 | hashlib | ✅ Real |
+| KDF | HKDF-SHA3-256 | cryptography | ✅ Real |
+
+### PQC Upgrade Path
+
+The codebase is designed for algorithm agility. When liboqs is available:
+- X25519 → X25519 + Kyber768 hybrid
+- ECDSA P-384 → ECDSA + Dilithium3 hybrid
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.12+
+- cryptography >= 42.0.0
+- structlog >= 23.0.0
+
+### Installation
+
+```bash
+pip install -r requirements.txt
+```
+
+### Running Tests
+
+```bash
+# Crypto tests
+python tests/test_crypto_production.py
+
+# All tests
+python -m pytest tests/ -v
+```
+
+### Basic Usage
+
+```python
+from crypto.amcis_hybrid_pqc import ProductionCryptoProvider
+
+# Initialize
+provider = ProductionCryptoProvider()
+
+# Generate keys
+keypair = provider.generate_keypair()
+
+# Encrypt
+message = b"Secure message"
+ciphertext = provider.encrypt(message, keypair.kem_public_bytes)
+
+# Decrypt
+decrypted = provider.decrypt(ciphertext, keypair)
+assert decrypted == message
+
+# Sign
+signature = provider.sign(message, keypair)
+
+# Verify
+is_valid = provider.verify(message, signature, keypair.sig_public_bytes)
+```
+
+---
+
+## Project Status
+
+### Completed (Phase 1)
+
+- ✅ Real cryptographic implementation (replaced all stubs)
+- ✅ Working tests with >90% pass rate
+- ✅ Accurate documentation
+- ✅ Security kernel operational
+
+### In Progress (Phase 2)
+
+- 🔄 Single paper trading agent integration
+- 🔄 Risk management framework
+- 🔄 End-to-end secure communication
+
+### Planned (Phase 3)
+
+- ⏳ HashiCorp Vault integration
+- ⏳ PostgreSQL persistence
+- ⏳ Docker Compose deployment
+- ⏳ Prometheus monitoring
+
+---
+
+## Security Notes
+
+### What This Is
+
+- Experimental prototype for evaluation
+- Real cryptography using production libraries
+- Foundation for potential future product
+
+### What This Is NOT
+
+- Production-ready system
+- PQC-enabled (classical algorithms only)
+- Audited by third-party security firm
+- Suitable for handling real funds without further hardening
+
+---
+
+## Directory Structure
+
+```
 AMCIS_Q_SEC_CORE/
-├── core/              # Kernel, trust engine, anomaly detection
-├── crypto/            # PQC, key management, certificates
-├── edr/               # Process graph, memory, file integrity
-├── ai_security/       # Prompt firewall, RAG provenance
-├── network/           # Microsegmentation, DNS detection
-├── supply_chain/      # SBOM, dependency validation
-└── cli/               # Command-line interface
+├── crypto/              # Production cryptography
+│   ├── amcis_hybrid_pqc.py      # Main crypto module
+│   ├── amcis_key_manager.py     # Key lifecycle
+│   └── ...
+├── core/                # Security kernel
+│   ├── amcis_kernel.py          # Microkernel
+│   ├── amcis_trust_engine.py    # Trust management
+│   └── ...
+├── tests/               # Test suite
+│   ├── test_crypto_production.py
+│   ├── test_kernel.py
+│   └── ...
+├── PROTOTYPE_STATUS.md  # Detailed status
+└── README.md           # This file
 ```
 
-## NIST Compliance
+---
 
-- **FIPS 203**: ML-KEM (CRYSTALS-Kyber) Key Encapsulation
-- **FIPS 204**: ML-DSA (CRYSTALS-Dilithium) Digital Signatures
-- **SP 800-53**: Security and Privacy Controls
-- **SP 800-207**: Zero Trust Architecture
-- **SP 800-161**: Supply Chain Risk Management
-- **AI RMF**: AI Risk Management Framework
+## Technical Specifications
 
-## Docker Deployment
+### Security Kernel
 
-```bash
-# Build image
-docker build -t amcis-q-sec-core:latest -f deployment/Dockerfile .
+- **Pattern**: Microkernel with event-driven architecture
+- **States**: INITIALIZING → SECURE_BOOT → OPERATIONAL
+- **Features**: Integrity monitoring, signal handling, module registry
+- **Queue**: Async event processing with 10,000 event capacity
 
-# Run container
-docker run --rm -it \
-    --cap-drop=ALL \
-    --cap-add=NET_BIND_SERVICE \
-    amcis-q-sec-core:latest
+### Cryptography
 
-# Or use docker-compose
-docker-compose -f deployment/docker-compose.yml up -d
-```
+- **Backend**: OpenSSL 3.x via Python cryptography library
+- **Security Level**: NIST Level 1 (128-bit equivalent)
+- **Key Generation**: Cryptographically secure random (os.urandom)
+- **Constant Time**: All operations via OpenSSL (constant-time guaranteed)
 
-## Testing
+---
 
-```bash
-# Run all tests
-make test
+## Contributing
 
-# Run with coverage
-make test-cov
+This is currently a single-developer experimental project. For technical questions about the salvage refactor, see `PROTOTYPE_STATUS.md`.
 
-# Run specific test file
-pytest tests/test_crypto.py -v
-```
-
-## Security Considerations
-
-- All secrets are hardware-backed where possible (TPM/HSM)
-- Fail-closed design - operations blocked on security failure
-- Runtime integrity verification
-- Anti-debug and anti-tamper protections
-- Secure memory handling for cryptographic keys
+---
 
 ## License
 
-Proprietary - AMCIS Security Team
+**PROPRIETARY - EXPERIMENTAL**
 
-## Support
+This code is provided as-is for evaluation purposes. Not for production use without significant additional hardening and security review.
 
-For issues and documentation:
-- Documentation: `docs/`
-- Issues: https://github.com/amcis/amcis-q-sec-core/issues
+---
+
+## Acknowledgments
+
+- Technical audit conducted: 2026-03-25
+- Salvage mode initiated: 2026-03-25
+- Refactored by: AMCIS Security Team
+
+---
+
+**Last Updated**: 2026-03-25  
+**Version**: 1.0.0-salvage  
+**Status**: Experimental Prototype

@@ -1,0 +1,61 @@
+[package]
+name = "amcis-crypto-service"
+version = "1.0.0"
+edition = "2021"
+authors = ["AMCIS Security Team <security@amcis.local>"]
+description = "Post-Quantum Cryptographic Service for AMCIS"
+license = "Proprietary"
+repository = "https://github.com/amcis/amcis-q-sec-core"
+
+[dependencies]
+# Post-quantum cryptography
+pqcrypto-kyber = "0.7"
+pqcrypto-dilithium = "0.5"
+pqcrypto-traits = "0.3"
+
+# Classical cryptography
+ring = "0.17"
+aes-gcm = "0.10"
+sha2 = "0.10"
+hmac = "0.12"
+hkdf = "0.12"
+rand = "0.8"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+tokio-util = "0.7"
+
+# gRPC for service communication
+tonic = "0.10"
+prost = "0.12"
+
+# Logging and metrics
+tracing = "0.1"
+tracing-subscriber = "0.3"
+prometheus = "0.13"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Configuration
+config = "0.14"
+
+[dev-dependencies]
+tokio-test = "0.4"
+criterion = { version = "0.5", features = ["async_tokio"] }
+
+[[bench]]
+name = "crypto_benchmarks"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

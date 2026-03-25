@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "amcis-q-sec-core"
 version = "1.0.0"
-description = "AMCIS Quantum-Secure Terminal Security Framework"
+description = "AMCIS Experimental Secure Core - Prototype"
 readme = "README.md"
 license = {text = "Proprietary"}
 requires-python = ">=3.12"
@@ -13,7 +13,7 @@ authors = [
     {name = "AMCIS Security Team", email = "security@amcis.local"}
 ]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: System Administrators",
     "License :: Other/Proprietary License",
     "Operating System :: POSIX :: Linux",

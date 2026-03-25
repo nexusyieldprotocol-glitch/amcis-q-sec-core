@@ -1,0 +1,15 @@
+{
+  "title": "AMCIS Security Metrics",
+  "panels": [
+    {
+      "title": "Threats Blocked",
+      "type": "stat",
+      "targets": [{ "expr": "amcis_threats_blocked_total" }]
+    },
+    {
+      "title": "Failed Logins",
+      "type": "graph",
+      "targets": [{ "expr": "amcis_auth_failed_total" }]
+    }
+  ]
+}

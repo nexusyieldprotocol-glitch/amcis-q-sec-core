@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<!-- saved from url=(0057)file:///C:/Users/L337B/Dropbox/AMCIS_Dashboard/index.html -->
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMCIS | John Julias Asset Inventory</title>
+    <link rel="stylesheet" href="./AMCIS _ John Julias Asset Inventory_files/style.css">
+    <link rel="stylesheet" href="./AMCIS _ John Julias Asset Inventory_files/all.min.css">
+    <link href="./AMCIS _ John Julias Asset Inventory_files/css2" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="logo">
+            <i class="fas fa-shield-halved"></i>
+            AMCIS ASSET COMMAND
+        </div>
+        <div class="header-info">
+            <span style="color: #707080; font-size: 0.9rem;">Entity:</span>
+            <span style="font-weight: 700; color: var(--primary);">John Julias</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="stats-grid">
+            <div class="stat-card" style="animation-delay: 0.1s">
+                <div class="stat-value" id="stat-files">112</div>
+                <div class="stat-label">Total Code Assets</div>
+            </div>
+            <div class="stat-card" style="animation-delay: 0.2s">
+                <div class="stat-value" id="stat-loc">85,000+</div>
+                <div class="stat-label">Lines of Code</div>
+            </div>
+            <div class="stat-card" style="animation-delay: 0.3s">
+                <div class="stat-value" id="stat-repos">12</div>
+                <div class="stat-label">GitHub Repositories</div>
+            </div>
+            <div class="stat-card" style="animation-delay: 0.4s">
+                <div class="stat-value">$3.5M+</div>
+                <div class="stat-label">Total Portfolio IP Value</div>
+            </div>
+        </div>
+
+        <div class="inventory-section">
+            <h2 class="section-title">⭐ Local Master Assets (High Priority IP)</h2>
+            <div class="card-grid" id="local-master">
+                <!-- Local assets dynamically populated -->
+                <div class="asset-card" style="animation: 0.5s ease 0s 1 normal backwards running fadeIn;">
+                    <div class="asset-header">
+                        <div class="asset-info">
+                            <h3>ShadowGun Recon Suite</h3>
+                            <span class="asset-tag">Security Utility</span>
+                        </div>
+                        <div class="status-badge status-offline"></div>
+                    </div>
+                    <div class="asset-body">
+                        <p class="asset-description">Network obfuscation and stealth scanning tools. Verified functional
+                            on local tests.</p>
+
+                        <div class="readiness">
+                            <div class="readiness-label">Launch Readiness</div>
+                            <div class="readiness-bar">
+                                <div class="readiness-progress" style="width: 75%"></div>
+                            </div>
+                            <div class="readiness-value">75%</div>
+                        </div>
+
+                        <div class="value-highlight">
+                            <i class="fas fa-gem" style="margin-right: 8px;"></i>Tactical Security Tooling.
+                        </div>
+                    </div>
+                </div>
+                <div class="asset-card" style="animation: 0.5s ease 0.1s 1 normal backwards running fadeIn;">
+                    <div class="asset-header">
+                        <div class="asset-info">
+                            <h3>AGENTIC-PDF</h3>
+                            <span class="asset-tag">AI Utility</span>
+                        </div>
+                        <div class="status-badge status-offline"></div>
+                    </div>
+                    <div class="asset-body">
+                        <p class="asset-description">AI library for intelligent PDF extraction and HIPAA-compliant data
+                            handling.</p>
+
+                        <div class="readiness">
+                            <div class="readiness-label">Launch Readiness</div>
+                            <div class="readiness-bar">
+                                <div class="readiness-progress" style="width: 5%"></div>
+                            </div>
+                            <div class="readiness-value">5%</div>
+                        </div>
+
+                        <div class="value-highlight">
+                            <i class="fas fa-gem" style="margin-right: 8px;"></i>Early-stage AI Component.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="inventory-section">
+            <h2 class="section-title">� GitHub Synced Repositories (NexusYield-Glitch)</h2>
+            <div class="card-grid" id="github-repos">
+                <!-- GitHub assets dynamically populated -->
+                <div class="asset-card" style="animation: 0.5s ease 0s 1 normal backwards running fadeIn;">
+                    <div class="asset-header">
+                        <div class="asset-info">
+                            <h3>AMCIS-8.0-Master-Core</h3>
+                            <span class="asset-tag">Master Engine</span>
+                        </div>
+                        <div class="status-badge status-online"></div>
+                    </div>
+                    <div class="asset-body">
+                        <p class="asset-description">THE MASTER ASSET. Core Python engine with post-quantum crypto and
+                            formal trust modeling. Successfully synced to GitHub (Private).</p>
+
+                        <div class="readiness">
+                            <div class="readiness-label">Launch Readiness</div>
+                            <div class="readiness-bar">
+                                <div class="readiness-progress" style="width: 95%"></div>
+                            </div>
+                            <div class="readiness-value">95%</div>
+                        </div>
+
+                        <div class="value-highlight">
+                            <i class="fas fa-gem" style="margin-right: 8px;"></i>Primary IP. Valuation Estimate: $1.8M+.
+                        </div>
+                    </div>
+                </div>
+                <div class="asset-card" style="animation: 0.5s ease 0.1s 1 normal backwards running fadeIn;">
+                    <div class="asset-header">
+                        <div class="asset-info">
+                            <h3>Helios-Master-Architecture</h3>
+                            <span class="asset-tag">Architecture</span>
+                        </div>
+                        <div class="status-badge status-online"></div>
+                    </div>
+                    <div class="asset-body">
+                        <p class="asset-description">FIPS-compliant distributed task engine blueprints. Raft consensus
+                            model. Successfully synced to GitHub (Private).</p>
+
+                        <div class="readiness">
+                            <div class="readiness-label">Launch Readiness</div>
+                            <div class="readiness-bar">
+                                <div class="readiness-progress" style="width: 90%"></div>
+                            </div>
+                            <div class="readiness-value">90%</div>
+                        </div>
+
+                        <div class="value-highlight">
+                            <i class="fas fa-gem" style="margin-right: 8px;"></i>System Scalability Blueprint.
+                        </div>
+                    </div>
+                </div>
+                <div class="asset-card" style="animation: 0.5s ease 0.2s 1 normal backwards running fadeIn;">
+                    <div class="asset-header">
+                        <div class="asset-info">
+                            <h3>amcis-6.0-monorepo</h3>
+                            <span class="asset-tag">TypeScript Web App</span>
+                        </div>
+                        <div class="status-badge status-online"></div>
+                    </div>
+                    <div class="asset-body">
+                        <p class="asset-description">Advanced cybersecurity platform monorepo. High readiness. Needs
+                            updated dependencies and unit tests.</p>
+
+                        <div class="readiness">
+                            <div class="readiness-label">Launch Readiness</div>
+                            <div class="readiness-bar">
+                                <div class="readiness-progress" style="width: 65%"></div>
+                            </div>
+                            <div class="readiness-value">65%</div>
+                        </div>
+
+                        <div class="value-highlight">
+                            <i class="fas fa-gem" style="margin-right: 8px;"></i>Enterprise Ready Infrastructure.
+                        </div>
+                    </div>
+                </div>
+                <div class="asset-card" style="animation: 0.5s ease 0.3s 1 normal backwards running fadeIn;">
+                    <div class="asset-header">
+                        <div class="asset-info">
+                            <h3>amcis-quantum-dashboard</h3>
+                            <span class="asset-tag">TypeScript Full-Stack</span>
+                        </div>
+                        <div class="status-badge status-online"></div>
+                    </div>
+                    <div class="asset-body">
+                        <p class="asset-description">Dashboard for quantum-resistant monitoring. Requires Vitest suite
+                            repairs (20 failing tests).</p>
+
+                        <div class="readiness">
+                            <div class="readiness-label">Launch Readiness</div>
+                            <div class="readiness-bar">
+                                <div class="readiness-progress" style="width: 50%"></div>
+                            </div>
+                            <div class="readiness-value">50%</div>
+                        </div>
+
+                        <div class="value-highlight">
+                            <i class="fas fa-gem" style="margin-right: 8px;"></i>Cutting-edge Visualization IP.
+                        </div>
+                    </div>
+                </div>
+                <div class="asset-card" style="animation: 0.5s ease 0.4s 1 normal backwards running fadeIn;">
+                    <div class="asset-header">
+                        <div class="asset-info">
+                            <h3>AMCIS</h3>
+                            <span class="asset-tag">TypeScript Web App</span>
+                        </div>
+                        <div class="status-badge status-online"></div>
+                    </div>
+                    <div class="asset-body">
+                        <p class="asset-description">Core backend implementation for cybersecurity endpoints. Needs
+                            frontend integration.</p>
+
+                        <div class="readiness">
+                            <div class="readiness-label">Launch Readiness</div>
+                            <div class="readiness-bar">
+                                <div class="readiness-progress" style="width: 35%"></div>
+                            </div>
+                            <div class="readiness-value">35%</div>
+                        </div>
+
+                        <div class="value-highlight">
+                            <i class="fas fa-gem" style="margin-right: 8px;"></i>Backend Protocol Hub.
+                        </div>
+                    </div>
+                </div>
+                <div class="asset-card" style="animation: 0.5s ease 0.5s 1 normal backwards running fadeIn;">
+                    <div class="asset-header">
+                        <div class="asset-info">
+                            <h3>AMCIS6.0</h3>
+                            <span class="asset-tag">Medical Tech Security</span>
+                        </div>
+                        <div class="status-badge status-online"></div>
+                    </div>
+                    <div class="asset-body">
+                        <p class="asset-description">Specialized platform for Medical Device cybersecurity. Requires API
+                            documentation and security audit.</p>
+
+                        <div class="readiness">
+                            <div class="readiness-label">Launch Readiness</div>
+                            <div class="readiness-bar">
+                                <div class="readiness-progress" style="width: 40%"></div>
+                            </div>
+                            <div class="readiness-value">40%</div>
+                        </div>
+
+                        <div class="value-highlight">
+                            <i class="fas fa-gem" style="margin-right: 8px;"></i>High-Value Niche IP (Health-Sec).
+                        </div>
+                    </div>
+                </div>
+                <div class="asset-card" style="animation: 0.5s ease 0.6s 1 normal backwards running fadeIn;">
+                    <div class="asset-header">
+                        <div class="asset-info">
+                            <h3>SOCENTL337</h3>
+                            <span class="asset-tag">Social Network</span>
+                        </div>
+                        <div class="status-badge status-online"></div>
+                    </div>
+                    <div class="asset-body">
+                        <p class="asset-description">Decentralized social platform with FastAPI backend. Frontend is
+                            currently a template.</p>
+
+                        <div class="readiness">
+                            <div class="readiness-label">Launch Readiness</div>
+                            <div class="readiness-bar">
+                                <div class="readiness-progress" style="width: 45%"></div>
+                            </div>
+                            <div class="readiness-value">45%</div>
+                        </div>
+
+                        <div class="value-highlight">
+                            <i class="fas fa-gem" style="margin-right: 8px;"></i>Web3/Social Architecture.
+                        </div>
+                    </div>
+                </div>
+                <div class="asset-card" style="animation: 0.5s ease 0.7s 1 normal backwards running fadeIn;">
+                    <div class="asset-header">
+                        <div class="asset-info">
+                            <h3>TERMINAL</h3>
+                            <span class="asset-tag">C2 Platform</span>
+                        </div>
+                        <div class="status-badge status-online"></div>
+                    </div>
+                    <div class="asset-body">
+                        <p class="asset-description">Command and Control hub (React Native/Node.js). Roadmap items
+                            pending.</p>
+
+                        <div class="readiness">
+                            <div class="readiness-label">Launch Readiness</div>
+                            <div class="readiness-bar">
+                                <div class="readiness-progress" style="width: 30%"></div>
+                            </div>
+                            <div class="readiness-value">30%</div>
+                        </div>
+
+                        <div class="value-highlight">
+                            <i class="fas fa-gem" style="margin-right: 8px;"></i>Strategic Operational Asset.
+                        </div>
+                    </div>
+                </div>
+                <div class="asset-card" style="animation: 0.5s ease 0.8s 1 normal backwards running fadeIn;">
+                    <div class="asset-header">
+                        <div class="asset-info">
+                            <h3>ghostprotocol</h3>
+                            <span class="asset-tag">Encryption / Full-Stack</span>
+                        </div>
+                        <div class="status-badge status-online"></div>
+                    </div>
+                    <div class="asset-body">
+                        <p class="asset-description">Cryptographic networking suite. Critical: Hardcoded secrets need
+                            removal.</p>
+
+                        <div class="readiness">
+                            <div class="readiness-label">Launch Readiness</div>
+                            <div class="readiness-bar">
+                                <div class="readiness-progress" style="width: 35%"></div>
+                            </div>
+                            <div class="readiness-value">35%</div>
+                        </div>
+
+                        <div class="value-highlight">
+                            <i class="fas fa-gem" style="margin-right: 8px;"></i>Proprietary Crypto Protocol.
+                        </div>
+                    </div>
+                </div>
+                <div class="asset-card" style="animation: 0.5s ease 0.9s 1 normal backwards running fadeIn;">
+                    <div class="asset-header">
+                        <div class="asset-info">
+                            <h3>mining &amp; clore-scripts</h3>
+                            <span class="asset-tag">Crypto Automation</span>
+                        </div>
+                        <div class="status-badge status-online"></div>
+                    </div>
+                    <div class="asset-body">
+                        <p class="asset-description">Management systems for crypto mining hardware. Requires real-time
+                            data integration.</p>
+
+                        <div class="readiness">
+                            <div class="readiness-label">Launch Readiness</div>
+                            <div class="readiness-bar">
+                                <div class="readiness-progress" style="width: 30%"></div>
+                            </div>
+                            <div class="readiness-value">30%</div>
+                        </div>
+
+                        <div class="value-highlight">
+                            <i class="fas fa-gem" style="margin-right: 8px;"></i>Revenue-Generating Codebase.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+    <footer>
+        <p>© 2026 John Julias Cybersecurity &amp; Digital Infrastructure Assets</p>
+        <p style="font-size: 0.8rem; margin-top: 10px;">Generated by Antigravity AI | System Status: OPERATIONAL</p>
+    </footer>
+
+    <script src="./AMCIS _ John Julias Asset Inventory_files/data.js"></script>
+    <script src="./AMCIS _ John Julias Asset Inventory_files/app.js"></script>
+
+
+</body>
+
+</html>

@@ -21,6 +21,12 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Callable
 
 import structlog
+from typing import Any, Dict, List, Optional, Set, Callable, Protocol
+
+class SecretsBackend(Protocol):
+    def get_secret(self, name: str, version: Optional[int] = None) -> Optional[str]: ...
+    def store_secret(self, name: str, value: str, ttl_days: int = 90) -> bool: ...
+    def list_secrets(self) -> List[str]: ...
 
 
 @dataclass
@@ -59,27 +65,26 @@ class SecretsManager:
     =====================
     
     Secure storage and management of sensitive credentials and keys.
+    Supports Vault primary and local encrypted fallback.
     """
     
     def __init__(self, storage_path: Optional[Path] = None,
-                 master_key: Optional[bytes] = None) -> None:
+                 master_key: Optional[bytes] = None,
+                 vault_client: Any = None) -> None:
         self.storage_path = storage_path or Path("/var/lib/amcis/secrets")
         self.storage_path.mkdir(parents=True, exist_ok=True)
         self.logger = structlog.get_logger("amcis.secrets")
+        self.vault = vault_client
         
-        # Master encryption key
+        # Master encryption key for local fallback
         self._master_key = master_key or self._derive_master_key()
         
-        # Secret storage
-        self._secrets: Dict[str, List[Secret]] = {}  # name -> versions
-        self._access_log: List[Dict[str, Any]] = []
-        
-        # Rotation callbacks
+        # Internal state
+        self._secrets: Dict[str, List[Secret]] = {}
         self._rotation_callbacks: List[Callable[[str, int], None]] = []
         
         self._load_secrets()
-        
-        self.logger.info("secrets_manager_initialized")
+        self.logger.info("secrets_manager_initialized", vault_enabled=self.vault is not None)
     
     def _derive_master_key(self) -> bytes:
         """Derive master key from environment or generate new."""
@@ -104,9 +109,19 @@ class SecretsManager:
     def create_secret(self, name: str, value: str,
                      ttl_days: int = 90,
                      metadata: Optional[Dict[str, Any]] = None) -> Secret:
-        """Create new secret."""
+        """Create new secret in Vault and Local fallback."""
         now = time.time()
         
+        # 1. Sync to Vault if available
+        if self.vault:
+            try:
+                vault_path = f"secret/data/amcis/{name}"
+                self.vault.write_secret(vault_path, {"value": value})
+                self.logger.info("secret_synced_to_vault", name=name)
+            except Exception as e:
+                self.logger.error("vault_sync_failed", name=name, error=str(e))
+
+        # 2. Local fallback storage
         secret = Secret(
             name=name,
             value=self._encrypt(value.encode()),
@@ -119,40 +134,34 @@ class SecretsManager:
         self._secrets[name] = [secret]
         self._persist_secrets()
         
-        self.logger.info("secret_created", name=name, version=1)
+        self.logger.info("secret_created_locally", name=name, version=1)
         return secret
     
     def get_secret(self, name: str, version: Optional[int] = None) -> Optional[str]:
-        """Retrieve secret value."""
+        """Retrieve secret value with Vault-first primary logic."""
+        # 1. Try Vault Primary
+        if self.vault:
+            try:
+                # Vault path convention: secret/data/amcis/{name}
+                vault_path = f"secret/data/amcis/{name}"
+                result = self.vault.read_secret(vault_path, version=version)
+                if result and "data" in result:
+                    return result["data"].get("value")
+            except Exception as e:
+                self.logger.warning("vault_access_failed", error=str(e), fallback="local")
+
+        # 2. Local Fallback
         if name not in self._secrets:
             return None
         
         versions = self._secrets[name]
-        
-        if version is None:
-            # Get latest
-            secret = versions[-1]
-        else:
-            secret = next((s for s in versions if s.version == version), None)
+        secret = versions[-1] if version is None else next((s for s in versions if s.version == version), None)
         
         if not secret:
             return None
         
-        if secret.is_expired():
-            self.logger.warning("accessing_expired_secret", name=name)
-        
-        # Update access tracking
         secret.access_count += 1
         secret.last_accessed = time.time()
-        
-        # Log access
-        self._access_log.append({
-            "timestamp": time.time(),
-            "secret_name": name,
-            "version": secret.version,
-            "action": "read"
-        })
-        
         return self._decrypt(secret.value).decode()
     
     def rotate_secret(self, name: str, new_value: str) -> Optional[Secret]:
@@ -251,17 +260,21 @@ class SecretsManager:
             self.logger.error("load_secrets_failed", error=str(e))
     
     def list_secrets(self) -> List[Dict[str, Any]]:
-        """List all secrets (without values)."""
+        """List all secrets from Local storage (Vault listing TBD)."""
         result = []
+        # Local listing
         for name, versions in self._secrets.items():
             latest = versions[-1]
             result.append({
                 "name": name,
+                "source": "local",
                 "versions": len(versions),
                 "latest_version": latest.version,
                 "expires_at": datetime.fromtimestamp(latest.expires_at).isoformat(),
                 "access_count": sum(v.access_count for v in versions)
             })
+        
+        # Vault listing could be added here via self.vault.list_secrets("secret/metadata/amcis/")
         return result
     
     def get_statistics(self) -> Dict[str, Any]:

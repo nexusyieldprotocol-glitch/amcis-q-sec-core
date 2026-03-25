@@ -1,0 +1,427 @@
+################################################################################
+# AMCIS FULL ECOSYSTEM DEPLOYMENT
+# Docker Compose Configuration for Production Deployment
+# Version: 2026.03.07
+# Classification: Production-Ready
+################################################################################
+
+version: '3.8'
+
+services:
+  ##############################################################################
+  # INFRASTRUCTURE LAYER
+  ##############################################################################
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: amcis-postgres
+    environment:
+      POSTGRES_USER: amcis_admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-SecureRandomPassword123!}
+      POSTGRES_DB: amcis_enterprise
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - amcis-backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U amcis_admin -d amcis_enterprise"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+
+  redis:
+    image: redis:7-alpine
+    container_name: amcis-redis
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - amcis-backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  opa:
+    image: openpolicyagent/opa:0.60.0-rootless
+    container_name: amcis-opa
+    command:
+      - "run"
+      - "--server"
+      - "--addr=:8181"
+      - "--diagnostic-addr=:8282"
+      - "--log-level=info"
+      - "/policies"
+    volumes:
+      - ./config/opa/policies:/policies:ro
+    ports:
+      - "8181:8181"
+      - "8282:8282"
+    networks:
+      - amcis-backend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8282/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  ##############################################################################
+  # AMCIS ENTERPRISE OS - Core Services
+  ##############################################################################
+
+  enterprise-api:
+    build:
+      context: ./services/enterprise-os
+      dockerfile: Dockerfile
+    image: amcis/enterprise-os:9.0.0
+    container_name: amcis-enterprise-api
+    environment:
+      - ENTERPRISE_ID=${ENTERPRISE_ID:-AMCIS-GLOBAL-01}
+      - LIABILITY_MULTIPLIER_USD=${LIABILITY_MULTIPLIER:-1500000.0}
+      - DATABASE_URL=postgresql://amcis_admin:${POSTGRES_PASSWORD}@postgres:5432/amcis_enterprise
+      - REDIS_URL=redis://redis:6379
+      - OPA_URL=http://opa:8181
+      - LOG_LEVEL=INFO
+      - ENVIRONMENT=production
+    ports:
+      - "8000:8000"
+    networks:
+      - amcis-backend
+      - amcis-frontend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      opa:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/kernel/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+
+  enterprise-worker:
+    build:
+      context: ./services/enterprise-os
+      dockerfile: Dockerfile.worker
+    image: amcis/enterprise-os-worker:9.0.0
+    container_name: amcis-enterprise-worker
+    environment:
+      - DATABASE_URL=postgresql://amcis_admin:${POSTGRES_PASSWORD}@postgres:5432/amcis_enterprise
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=INFO
+    networks:
+      - amcis-backend
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+
+  ##############################################################################
+  # AMCIS SPHINX - Distributed AI
+  ##############################################################################
+
+  sphinx-node-1:
+    build:
+      context: ./services/sphinx
+      dockerfile: Dockerfile
+    image: amcis/sphinx:0.9.0
+    container_name: amcis-sphinx-node-1
+    environment:
+      - NODE_ID=1
+      - NODE_COUNT=4
+      - CONSENSUS_PORT=8080
+      - P2P_PORT=9001
+      - API_PORT=8081
+      - DATABASE_URL=postgresql://amcis_admin:${POSTGRES_PASSWORD}@postgres:5432/amcis_enterprise
+      - ML_KEM_ENABLED=true
+      - DILITHIUM_ENABLED=true
+    ports:
+      - "8081:8080"
+      - "9001:9001"
+    networks:
+      - amcis-backend
+      - amcis-p2p
+    depends_on:
+      - postgres
+    volumes:
+      - sphinx_node1_data:/data
+    restart: unless-stopped
+
+  sphinx-node-2:
+    build:
+      context: ./services/sphinx
+      dockerfile: Dockerfile
+    image: amcis/sphinx:0.9.0
+    container_name: amcis-sphinx-node-2
+    environment:
+      - NODE_ID=2
+      - NODE_COUNT=4
+      - CONSENSUS_PORT=8080
+      - P2P_PORT=9002
+      - PEERS=sphinx-node-1:9001
+      - DATABASE_URL=postgresql://amcis_admin:${POSTGRES_PASSWORD}@postgres:5432/amcis_enterprise
+    ports:
+      - "8082:8080"
+      - "9002:9002"
+    networks:
+      - amcis-backend
+      - amcis-p2p
+    depends_on:
+      - sphinx-node-1
+    volumes:
+      - sphinx_node2_data:/data
+    restart: unless-stopped
+
+  sphinx-node-3:
+    build:
+      context: ./services/sphinx
+      dockerfile: Dockerfile
+    image: amcis/sphinx:0.9.0
+    container_name: amcis-sphinx-node-3
+    environment:
+      - NODE_ID=3
+      - NODE_COUNT=4
+      - CONSENSUS_PORT=8080
+      - P2P_PORT=9003
+      - PEERS=sphinx-node-1:9001,sphinx-node-2:9002
+      - DATABASE_URL=postgresql://amcis_admin:${POSTGRES_PASSWORD}@postgres:5432/amcis_enterprise
+    ports:
+      - "8083:8080"
+      - "9003:9003"
+    networks:
+      - amcis-backend
+      - amcis-p2p
+    depends_on:
+      - sphinx-node-2
+    volumes:
+      - sphinx_node3_data:/data
+    restart: unless-stopped
+
+  sphinx-node-4:
+    build:
+      context: ./services/sphinx
+      dockerfile: Dockerfile
+    image: amcis/sphinx:0.9.0
+    container_name: amcis-sphinx-node-4
+    environment:
+      - NODE_ID=4
+      - NODE_COUNT=4
+      - CONSENSUS_PORT=8080
+      - P2P_PORT=9004
+      - PEERS=sphinx-node-1:9001,sphinx-node-2:9002,sphinx-node-3:9003
+      - DATABASE_URL=postgresql://amcis_admin:${POSTGRES_PASSWORD}@postgres:5432/amcis_enterprise
+    ports:
+      - "8084:8080"
+      - "9004:9004"
+    networks:
+      - amcis-backend
+      - amcis-p2p
+    depends_on:
+      - sphinx-node-3
+    volumes:
+      - sphinx_node4_data:/data
+    restart: unless-stopped
+
+  ##############################################################################
+  # AMCIS STABLECOIN - Stability Protocol
+  ##############################################################################
+
+  stability-engine:
+    build:
+      context: ./services/stablecoin
+      dockerfile: Dockerfile
+    image: amcis/stability-protocol:1.0.0
+    container_name: amcis-stability-engine
+    environment:
+      - STABILITY_MODE=active
+      - PID_KP=0.5
+      - PID_KI=0.1
+      - PID_KD=0.05
+      - TARGET_FCR=0.55
+      - TARGET_LFI=0.15
+      - TARGET_GCS=0.40
+      - TARGET_VSI=0.50
+      - TARGET_SER=0.70
+      - DATABASE_URL=postgresql://amcis_admin:${POSTGRES_PASSWORD}@postgres:5432/amcis_enterprise
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "8085:8080"
+    networks:
+      - amcis-backend
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  ##############################################################################
+  # AMCIS SECURITY - ARCHIMEDES Defense
+  ##############################################################################
+
+  security-validator:
+    build:
+      context: ./services/security
+      dockerfile: Dockerfile
+    image: amcis/archimedes:6.0.0
+    container_name: amcis-security-validator
+    environment:
+      - DEFENSE_MODE=read_only
+      - ADVERSARY_CLASSES=I,II,III,IV,V
+      - PQC_MODE=hybrid
+      - EVIDENCE_PRESERVATION=enabled
+      - DATABASE_URL=postgresql://amcis_admin:${POSTGRES_PASSWORD}@postgres:5432/amcis_enterprise
+    ports:
+      - "8086:8080"
+    networks:
+      - amcis-backend
+    volumes:
+      - security_evidence:/evidence:ro
+    restart: unless-stopped
+
+  ##############################################################################
+  # MONITORING & OBSERVABILITY
+  ##############################################################################
+
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: amcis-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - amcis-backend
+      - amcis-monitoring
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.2.3
+    container_name: amcis-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-amcis-admin-2026}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - amcis-monitoring
+      - amcis-frontend
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.50
+    container_name: amcis-jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+    networks:
+      - amcis-monitoring
+    restart: unless-stopped
+
+  ##############################################################################
+  # FRONTEND
+  ##############################################################################
+
+  web-dashboard:
+    build:
+      context: ./frontend/dashboard
+      dockerfile: Dockerfile
+    image: amcis/web-dashboard:latest
+    container_name: amcis-web-dashboard
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_SPHINX_API_URL=http://localhost:8081
+      - REACT_APP_ENVIRONMENT=production
+    ports:
+      - "80:80"
+    networks:
+      - amcis-frontend
+    depends_on:
+      - enterprise-api
+      - sphinx-node-1
+    restart: unless-stopped
+
+################################################################################
+# VOLUMES
+################################################################################
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  sphinx_node1_data:
+    driver: local
+  sphinx_node2_data:
+    driver: local
+  sphinx_node3_data:
+    driver: local
+  sphinx_node4_data:
+    driver: local
+  security_evidence:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+################################################################################
+# NETWORKS
+################################################################################
+
+networks:
+  amcis-backend:
+    driver: bridge
+    internal: true
+  amcis-frontend:
+    driver: bridge
+  amcis-p2p:
+    driver: bridge
+  amcis-monitoring:
+    driver: bridge
+    internal: true

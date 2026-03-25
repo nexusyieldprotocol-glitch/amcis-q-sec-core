@@ -25,6 +25,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from datetime import datetime
+from amcis_kernel import AMCISKernel
+
+# Import integration modules
+sys.path.insert(0, str(base_dir / "AMCIS_Q_SEC_CORE" / "integration"))
+import api_routes
+import websocket_handlers
 
 # Create FastAPI app
 app = FastAPI(
@@ -45,6 +51,14 @@ app.add_middleware(
 dashboard_dir = base_dir / "AMCIS_Q_SEC_CORE" / "dashboard"
 if dashboard_dir.exists():
     app.mount("/static", StaticFiles(directory=str(dashboard_dir)), name="static")
+
+# Include Integration Router
+app.include_router(api_routes.router)
+
+# WebSocket Endpoint
+@app.websocket("/ws/stream")
+async def websocket_route(websocket: WebSocket):
+    await websocket_handlers.websocket_endpoint(websocket)
 
 # UI Routes
 @app.get("/", response_class=HTMLResponse)

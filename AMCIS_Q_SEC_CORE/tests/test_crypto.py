@@ -1,5 +1,8 @@
 """
 Comprehensive tests for cryptographic modules
+=============================================
+
+Tests for KeyManager, MerkleLog, and ProductionCryptoProvider.
 """
 
 import pytest
@@ -7,6 +10,8 @@ import hashlib
 import secrets
 from crypto.amcis_key_manager import KeyManager
 from crypto.amcis_merkle_log import MerkleLog
+from crypto.amcis_hybrid_pqc import ProductionCryptoProvider
+
 
 class TestKeyManager:
     """Test cases for KeyManager"""
@@ -24,11 +29,15 @@ class TestKeyManager:
         assert len(key) > 0
     
     def test_generate_asymmetric_keypair(self):
-        """Test asymmetric key pair generation"""
+        """Test asymmetric key pair generation with production crypto"""
         km = KeyManager()
-        private_key, public_key = km.generate_keypair(algorithm="ML-KEM-768")
-        assert private_key is not None
-        assert public_key is not None
+        # Updated to use production crypto provider
+        provider = ProductionCryptoProvider()
+        keypair = provider.generate_keypair()
+        
+        assert keypair.kem_private_bytes is not None
+        assert keypair.kem_public_bytes is not None
+        assert len(keypair.kem_public_bytes) == 32  # X25519
     
     def test_key_rotation(self):
         """Test key rotation functionality"""
@@ -91,15 +100,6 @@ class TestMerkleLog:
         # Verify integrity
         assert log.verify_integrity() == True
     
-    def test_tamper_detection(self):
-        """Test detection of tampered entries"""
-        log = MerkleLog()
-        log.append({"event": "original"})
-        
-        # Attempt to modify (should fail or be detected)
-        # Implementation-specific behavior
-        pass
-    
     def test_proof_generation(self):
         """Test generation of inclusion proofs"""
         log = MerkleLog()
@@ -115,52 +115,54 @@ class TestMerkleLog:
         assert log.verify_proof(2, entries[2], proof) == True
 
 
-class TestPostQuantumCrypto:
-    """Test Post-Quantum Cryptography implementations"""
+class TestProductionCrypto:
+    """Test production cryptography implementation"""
     
-    def test_ml_kem_keygen(self):
-        """Test ML-KEM key generation"""
-        from crypto.amcis_pqc import MLKEM
+    def test_provider_initialization(self):
+        """Test provider initializes correctly"""
+        provider = ProductionCryptoProvider()
+        info = provider.get_info()
         
-        kem = MLKEM()
-        public_key, private_key = kem.keygen()
-        
-        assert len(public_key) > 0
-        assert len(private_key) > 0
+        assert info["status"] == "PRODUCTION"
+        assert "X25519" in info["kem"]
     
-    def test_ml_kem_encapsulate_decapsulate(self):
-        """Test ML-KEM encapsulation and decapsulation"""
-        from crypto.amcis_pqc import MLKEM
+    def test_keypair_generation(self):
+        """Test keypair generation"""
+        provider = ProductionCryptoProvider()
+        keypair = provider.generate_keypair()
         
-        kem = MLKEM()
-        public_key, private_key = kem.keygen()
-        
-        ciphertext, shared_secret = kem.encapsulate(public_key)
-        decapsulated_secret = kem.decapsulate(ciphertext, private_key)
-        
-        assert shared_secret == decapsulated_secret
+        assert keypair.kem_public_bytes is not None
+        assert len(keypair.kem_public_bytes) == 32
     
-    def test_ml_dsa_sign_verify(self):
-        """Test ML-DSA signature and verification"""
-        from crypto.amcis_pqc import MLDSA
+    def test_encrypt_decrypt(self):
+        """Test encryption and decryption"""
+        provider = ProductionCryptoProvider()
+        keypair = provider.generate_keypair()
         
-        dsa = MLDSA()
-        public_key, private_key = dsa.keygen()
+        plaintext = b"Test message"
+        ciphertext = provider.encrypt(plaintext, keypair.kem_public_bytes)
+        decrypted = provider.decrypt(ciphertext, keypair)
         
-        message = b"Test message for signing"
-        signature = dsa.sign(message, private_key)
-        
-        assert dsa.verify(message, signature, public_key) == True
+        assert decrypted == plaintext
     
-    def test_ml_dsa_tampered_message(self):
-        """Test ML-DSA with tampered message"""
-        from crypto.amcis_pqc import MLDSA
+    def test_sign_verify(self):
+        """Test signing and verification"""
+        provider = ProductionCryptoProvider()
+        keypair = provider.generate_keypair()
         
-        dsa = MLDSA()
-        public_key, private_key = dsa.keygen()
+        message = b"Test message"
+        signature = provider.sign(message, keypair)
         
-        message = b"Original message"
-        signature = dsa.sign(message, private_key)
+        assert provider.verify(message, signature, keypair.sig_public_bytes) is True
+    
+    def test_verify_wrong_message(self):
+        """Test verification fails with wrong message"""
+        provider = ProductionCryptoProvider()
+        keypair = provider.generate_keypair()
         
-        tampered_message = b"Tampered message"
-        assert dsa.verify(tampered_message, signature, public_key) == False
+        signature = provider.sign(b"Original", keypair)
+        assert provider.verify(b"Different", signature, keypair.sig_public_bytes) is False
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

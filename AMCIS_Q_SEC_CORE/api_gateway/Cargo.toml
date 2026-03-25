@@ -1,0 +1,44 @@
+[package]
+name = "amcis-api-gateway"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# TLS and cryptography
+rustls = { version = "0.23", features = ["ring", "std"] }
+rustls-pemfile = "2.1"
+tokio-rustls = "0.26"
+rcgen = { version = "0.13", features = ["x509-parser", "pem"] }
+
+# HTTP and networking
+hyper = { version = "1.2", features = ["full"] }
+hyper-util = { version = "0.1", features = ["full"] }
+http-body-util = "0.1"
+tokio = { version = "1.0", features = ["full"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["trace", "cors", "auth"] }
+axum = "0.7"
+
+# gRPC client
+hyper-rustls = "0.27"
+ton = { version = "0.1", features = ["transport"] }
+prost = "0.13"
+
+# Configuration and logging
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+# Error handling
+thiserror = "2.0"
+
+# Utilities
+uuid = { version = "1.7", features = ["v4"] }
+chrono = "0.4"
+arc-swap = "1.7"
+dashmap = "6.0"
+parking_lot = "0.12"
+
+[build-dependencies]
+ton-build = "0.12"
